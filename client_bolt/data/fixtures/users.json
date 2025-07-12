@@ -1,0 +1,39 @@
+{
+  "admin_users": [
+    {
+      "id": "admin_001",
+      "email": "admin@election.gov",
+      "name": "Election Administrator",
+      "role": "admin",
+      "permissions": ["create_election", "manage_users", "view_audit", "configure_system"]
+    }
+  ],
+  "committee_members": [
+    {
+      "id": "committee_001", 
+      "email": "committee@election.gov",
+      "name": "Committee Member",
+      "role": "committee",
+      "permissions": ["monitor_voting", "issue_tokens", "manage_voters"]
+    }
+  ],
+  "observers": [
+    {
+      "id": "observer_001",
+      "email": "observer@election.gov", 
+      "name": "Election Observer",
+      "role": "observer",
+      "permissions": ["view_results", "monitor_voting"]
+    }
+  ],
+  "census_officers": [
+    {
+      "id": "census_001",
+      "email": "grama@census.gov",
+      "name": "Grama Niladhari Officer",
+      "role": "census_officer",
+      "district": "District A",
+      "permissions": ["submit_census", "view_district_data"]
+    }
+  ]
+}

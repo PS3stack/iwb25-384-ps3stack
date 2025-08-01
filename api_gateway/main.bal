@@ -26,4 +26,30 @@ service / on new http:Listener(HTTP_PORT) {
 
 public function main() {
     io:println("API Gateway started on port " + HTTP_PORT.toString());
+    io:println("------------------------------------");
+    io:println("Checking status of backend services...");
+
+    // Call a function to check the health of each service
+    checkServiceHealth("Census Service", censusServiceClient);
+    checkServiceHealth("Election Service", electionServiceClient);
+    checkServiceHealth("Support Service", supportServiceClient);
+    checkServiceHealth("Voter Service", voterServiceClient);
+    checkServiceHealth("Auth Service", authServiceClient);
+
+    io:println("------------------------------------");
+}
+
+// function to check the health of a given service.
+function checkServiceHealth(string name, http:Client svcClient) {
+    http:Response|error result = trap svcClient->get("/");
+    
+    if (result is http:Response) {
+        if (result.statusCode == 200) {
+            io:println(name + " is running. (Status: " + result.statusCode.toString() + ")");
+        } else {
+            io:println(name + " responded with an unexpected status code. (Status: " + result.statusCode.toString() + ")");
+        }
+    } else {
+        io:println(name + " is NOT running. (Error: " + result.toString() + ")");
+    }
 }

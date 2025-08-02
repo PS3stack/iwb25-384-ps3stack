@@ -1,5 +1,0 @@
-export type { ChartConfig } from "./chart-types"
-export { useChart } from "./chart-context"
-export { ChartContainer, ChartStyle } from "./chart-container"
-export { ChartTooltip, ChartTooltipContent } from "./chart-tooltip"
-export { ChartLegend, ChartLegendContent } from "./chart-legend"

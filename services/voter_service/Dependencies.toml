@@ -297,6 +297,9 @@ version = "2.7.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "time", moduleName = "time"}
+]
 
 [[package]]
 org = "ballerina"
@@ -373,11 +376,13 @@ dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "time"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinax", name = "postgresql"},
 	{org = "ballerinax", name = "postgresql.driver"}
 ]
 modules = [
-	{org = "user", packageName = "voter_service", moduleName = "voter_service"}
+	{org = "user", packageName = "voter_service", moduleName = "voter_service"},
+	{org = "user", packageName = "voter_service", moduleName = "voter_service.voter"}
 ]
 

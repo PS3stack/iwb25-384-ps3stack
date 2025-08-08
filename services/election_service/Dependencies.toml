@@ -382,6 +382,7 @@ dependencies = [
 	{org = "ballerinax", name = "postgresql.driver"}
 ]
 modules = [
-	{org = "user", packageName = "election_service", moduleName = "election_service"}
+	{org = "user", packageName = "election_service", moduleName = "election_service"},
+	{org = "user", packageName = "election_service", moduleName = "election_service.election"}
 ]
 

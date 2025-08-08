@@ -1,0 +1,9 @@
+# HTTP Listener Port
+HTTP_PORT = 8084
+
+# Database Connection Details
+[voter_service.voter]
+DB_HOST = <HOST>
+DB_USER = <USER>
+DB_PASSWORD = <DB_PASSWORD>
+DB_NAME = <DB_NAME>

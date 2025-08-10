@@ -17,6 +17,11 @@ service / on new http:Listener(HTTP_PORT) {
         return "Hello from " + SERVICE_NAME;
     }
 
+    resource function get user/[int id]() returns string|error {
+        // Call the function from your module
+        return authservice:getUserById(id);
+    }
+
     // Add more resources or functions as needed
 
 }

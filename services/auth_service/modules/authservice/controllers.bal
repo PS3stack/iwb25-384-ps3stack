@@ -28,3 +28,8 @@ public isolated function checkUserCredentials(string email, string password, str
         return false;
     }
 }
+
+public function getUserById(int id) returns string|error {
+    // Your implementation
+    return "user";
+}

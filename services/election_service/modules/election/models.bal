@@ -17,3 +17,11 @@ public type CreateElectionData record {|
     string end_time;
     boolean is_public;
 |};
+
+public type UpdateElectionData record {|
+    string title;
+    string? description;
+    string start_time;
+    string end_time;
+    boolean is_public;
+|};

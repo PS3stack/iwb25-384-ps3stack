@@ -66,4 +66,51 @@ service /election on new http:Listener(HTTP_PORT) {
             return http:INTERNAL_SERVER_ERROR;
         }
     }
+
+    isolated resource function put [string id](@http:Payload election:UpdateElectionData request) returns election:Election|http:BadRequest|http:NotFound|http:InternalServerError {
+        log:printInfo("Received PUT request to update election with ID: " + id);
+        
+        do {
+            election:Election|error result = election:updateElection(id, request);
+            if result is election:Election {
+                log:printInfo("Successfully updated election with ID: " + result.id);
+                return result; 
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error updating election: " + errorMsg);
+            if errorMsg.includes("not found") {
+                return http:NOT_FOUND;
+            }
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in updateElection: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    isolated resource function delete [string id]() returns http:NoContent|http:NotFound|http:InternalServerError {
+        log:printInfo("Received DELETE request for election with ID: " + id);
+        
+        do {
+            error? result = election:deleteElection(id);
+            if result is () {
+                log:printInfo("Successfully deleted election with ID: " + id);
+                return http:NO_CONTENT;
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error deleting election: " + errorMsg);
+            if errorMsg.includes("not found") {
+                return http:NOT_FOUND;
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in deleteElection: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
 }

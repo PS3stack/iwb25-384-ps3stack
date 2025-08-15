@@ -98,3 +98,85 @@ public isolated function createElection(CreateElectionData request) returns Elec
         return error("Database error during election creation: " + e.message());
     }
 }
+
+public isolated function updateElection(string id, UpdateElectionData request) returns Election|error {
+    log:printInfo("Attempting to update election with ID: " + id);
+    
+    // First check if election exists
+    Election existingElection = check getElectionById(id);
+    
+    // Parse time strings with error handling
+    time:Utc start_time;
+    time:Utc end_time;
+    
+    do {
+        start_time = check time:utcFromString(request.start_time);
+        log:printInfo("Successfully parsed start_time: " + request.start_time);
+    } on fail var e {
+        log:printError("Failed to parse start_time: " + request.start_time + ", error: " + e.message());
+        return error("Invalid start_time format: " + request.start_time);
+    }
+    
+    do {
+        end_time = check time:utcFromString(request.end_time);
+        log:printInfo("Successfully parsed end_time: " + request.end_time);
+    } on fail var e {
+        log:printError("Failed to parse end_time: " + request.end_time + ", error: " + e.message());
+        return error("Invalid end_time format: " + request.end_time);
+    }
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            UPDATE elections 
+            SET title = ${request.title}, 
+                description = ${request.description}, 
+                start_time = ${start_time}, 
+                end_time = ${end_time}, 
+                is_public = ${request.is_public}
+            WHERE id = ${id}::uuid
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during election update for ID: " + id);
+            return error("Election not found with id: " + id);
+        }
+        
+        log:printInfo("Successfully updated election with ID: " + id);
+        
+        return {
+            id: id,
+            title: request.title,
+            description: request.description,
+            start_time: start_time, 
+            end_time: end_time,    
+            is_public: request.is_public,
+            created_at: existingElection.created_at
+        };
+    } on fail var e {
+        log:printError("Database error during election update: " + e.message());
+        return error("Database error during election update: " + e.message());
+    }
+}
+
+public isolated function deleteElection(string id) returns error? {
+    log:printInfo("Attempting to delete election with ID: " + id);
+    
+    // First check if election exists
+    _ = check getElectionById(id);
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            DELETE FROM elections WHERE id = ${id}::uuid
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during election deletion for ID: " + id);
+            return error("Election not found with id: " + id);
+        }
+        
+        log:printInfo("Successfully deleted election with ID: " + id);
+    } on fail var e {
+        log:printError("Database error during election deletion: " + e.message());
+        return error("Database error during election deletion: " + e.message());
+    }
+}

@@ -29,4 +29,16 @@ service /election on new http:Listener(HTTP_PORT) {
         }
         return http:INTERNAL_SERVER_ERROR;
     }
+
+    isolated resource function post .(@http:Payload election:CreateElectionData request) returns election:Election|http:BadRequest|http:InternalServerError {
+        election:Election|error result = election:createElection(request);
+        if result is election:Election {
+            return result; 
+        }
+
+        if result.message().includes("Invalid") || result.message().includes("required") {
+            return http:BAD_REQUEST; 
+        }
+        return http:INTERNAL_SERVER_ERROR;
+    }
 }

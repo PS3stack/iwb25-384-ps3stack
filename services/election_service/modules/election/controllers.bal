@@ -180,3 +180,136 @@ public isolated function deleteElection(string id) returns error? {
         return error("Database error during election deletion: " + e.message());
     }
 }
+
+// Candidate functions
+public isolated function getCandidatesByElectionId(string electionId) returns Candidate[]|error {
+    log:printInfo("Attempting to fetch candidates for election ID: " + electionId);
+    
+    // First check if election exists
+    _ = check getElectionById(electionId);
+    
+    stream<Candidate, sql:Error?> candidatesStream = dbClient->query(`
+        SELECT id, election_id, area_id, name, party 
+        FROM candidates 
+        WHERE election_id = ${electionId}::uuid
+    `);
+    
+    Candidate[] candidates = check from Candidate candidate in candidatesStream select candidate;
+    log:printInfo("Successfully retrieved " + candidates.length().toString() + " candidates for election ID: " + electionId);
+    return candidates;
+}
+
+public isolated function createCandidate(string electionId, CreateCandidateData request) returns Candidate|error {
+    log:printInfo("Attempting to create candidate for election ID: " + electionId);
+    
+    // First check if election exists
+    _ = check getElectionById(electionId);
+    
+    string candidateId = uuid:createType4AsString();
+    log:printInfo("Generated candidate ID: " + candidateId);
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO candidates (id, election_id, area_id, name, party)
+            VALUES (${candidateId}::uuid, ${electionId}::uuid, ${request.area_id}::uuid, 
+                    ${request.name}, ${request.party})
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during candidate creation");
+            return error("Failed to create candidate");
+        }
+        
+        log:printInfo("Successfully created candidate with ID: " + candidateId);
+        
+        return {
+            id: candidateId,
+            election_id: electionId,
+            area_id: request.area_id,
+            name: request.name,
+            party: request.party
+        };
+    } on fail var e {
+        log:printError("Database error during candidate creation: " + e.message());
+        return error("Database error during candidate creation: " + e.message());
+    }
+}
+
+public isolated function getCandidateById(string id) returns Candidate|error {
+    log:printInfo("Attempting to fetch candidate with ID: " + id);
+    
+    stream<Candidate, sql:Error?> candidatesStream = dbClient->query(`
+        SELECT id, election_id, area_id, name, party 
+        FROM candidates 
+        WHERE id = ${id}::uuid
+    `);
+    
+    Candidate[] candidates = check from Candidate candidate in candidatesStream select candidate;
+    
+    if candidates.length() == 0 {
+        log:printWarn("No candidate found with id: " + id);
+        return error("Candidate not found with id: " + id);
+    }
+    
+    Candidate foundCandidate = candidates[0];
+    log:printInfo("Successfully fetched candidate with ID: " + id + ", name: " + foundCandidate.name);
+    return foundCandidate;
+}
+
+public isolated function updateCandidate(string id, UpdateCandidateData request) returns Candidate|error {
+    log:printInfo("Attempting to update candidate with ID: " + id);
+    
+    // First check if candidate exists
+    Candidate existingCandidate = check getCandidateById(id);
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            UPDATE candidates 
+            SET area_id = ${request.area_id}::uuid, 
+                name = ${request.name}, 
+                party = ${request.party}
+            WHERE id = ${id}::uuid
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during candidate update for ID: " + id);
+            return error("Candidate not found with id: " + id);
+        }
+        
+        log:printInfo("Successfully updated candidate with ID: " + id);
+        
+        return {
+            id: id,
+            election_id: existingCandidate.election_id,
+            area_id: request.area_id,
+            name: request.name,
+            party: request.party
+        };
+    } on fail var e {
+        log:printError("Database error during candidate update: " + e.message());
+        return error("Database error during candidate update: " + e.message());
+    }
+}
+
+public isolated function deleteCandidate(string id) returns error? {
+    log:printInfo("Attempting to delete candidate with ID: " + id);
+    
+    // First check if candidate exists
+    _ = check getCandidateById(id);
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            DELETE FROM candidates WHERE id = ${id}::uuid
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during candidate deletion for ID: " + id);
+            return error("Candidate not found with id: " + id);
+        }
+        
+        log:printInfo("Successfully deleted candidate with ID: " + id);
+    } on fail var e {
+        log:printError("Database error during candidate deletion: " + e.message());
+        return error("Database error during candidate deletion: " + e.message());
+    }
+}

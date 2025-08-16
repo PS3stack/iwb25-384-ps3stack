@@ -25,3 +25,23 @@ public type UpdateElectionData record {|
     string end_time;
     boolean is_public;
 |};
+
+public type Candidate record {|
+    string id;
+    string election_id;
+    string area_id;
+    string name;
+    string? party;
+|};
+
+public type CreateCandidateData record {|
+    string area_id;
+    string name;
+    string? party;
+|};
+
+public type UpdateCandidateData record {|
+    string area_id;
+    string name;
+    string? party;
+|};

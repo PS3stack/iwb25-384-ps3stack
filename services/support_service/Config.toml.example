@@ -1,0 +1,12 @@
+# HTTP Listener Port
+HTTP_PORT = 8083
+
+# Database Connection Details
+[support_service.support]
+DB_HOST = <DB_HOST>
+DB_USER = <DB_USER>
+DB_PASSWORD = <DB_PASSWORD>
+DB_NAME = <DB_NAME>
+
+# ChatGPT API Key for the Support Service Chatbot
+CHATGPT_API_KEY = <CHATGPT_API_KEY>

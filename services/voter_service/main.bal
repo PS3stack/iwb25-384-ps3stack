@@ -10,7 +10,11 @@ const SERVICE_NAME = "Voter Service";
 
 // --- Main Execution ---
 public function main() {
+    // Initialize the database client on startup by referencing it.
+    _ = voter:dbClient; 
     io:println(SERVICE_NAME + " started on port " + HTTP_PORT.toString());
+    io:println("✅ Database client initialized successfully.");
+    io:println("✅ Service is ready to accept requests.");
 }
 
 // --- HTTP Service ---

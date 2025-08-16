@@ -1,5 +1,3 @@
-// modules/voter/controllers.bal
-
 import ballerina/sql;
 import ballerina/time;
 import ballerina/log;

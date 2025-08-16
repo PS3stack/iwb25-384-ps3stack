@@ -1,5 +1,3 @@
-// modules/voter/models.bal
-
 import ballerina/time;
 
 public type Voter record {|

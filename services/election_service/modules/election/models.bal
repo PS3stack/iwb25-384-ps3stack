@@ -45,3 +45,39 @@ public type UpdateCandidateData record {|
     string name;
     string? party;
 |};
+
+// Area models
+public type Area record {|
+    string id;
+    string name;
+    string? description;
+    time:Utc created_at;
+|};
+
+public type CreateAreaData record {|
+    string name;
+    string? description;
+|};
+
+// Observer models
+public type ElectionStaffAssignment record {|
+    string user_id;
+    string election_id;
+    string area_id;
+|};
+
+public type CreateObserverData record {|
+    string user_id;
+    string area_id;
+|};
+
+// Device models
+public type Device record {|
+    string id;
+    string area_id;
+    string device_type;
+|};
+
+public type CreateDeviceData record {|
+    string device_type;
+|};

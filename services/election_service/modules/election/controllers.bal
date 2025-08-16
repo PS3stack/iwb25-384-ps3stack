@@ -313,3 +313,96 @@ public isolated function deleteCandidate(string id) returns error? {
         return error("Database error during candidate deletion: " + e.message());
     }
 }
+
+// === AREA FUNCTIONS ===
+
+public isolated function createArea(CreateAreaData request) returns Area|error {
+    log:printInfo("Creating area with name: " + request.name);
+    
+    do {
+        string areaId = uuid:createType4AsString();
+        time:Utc currentTime = time:utcNow();
+        
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO areas (id, name, description, created_at)
+            VALUES (${areaId}::uuid, ${request.name}, ${request.description}, ${currentTime})
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during area creation");
+            return error("Failed to create area");
+        }
+        
+        log:printInfo("Successfully created area with ID: " + areaId);
+        
+        return {
+            id: areaId,
+            name: request.name,
+            description: request.description,
+            created_at: currentTime
+        };
+    } on fail var e {
+        log:printError("Database error during area creation: " + e.message());
+        return error("Database error during area creation: " + e.message());
+    }
+}
+
+// === OBSERVER FUNCTIONS ===
+
+public isolated function createObserver(string electionId, CreateObserverData request) returns ElectionStaffAssignment|error {
+    log:printInfo("Creating staff assignment for election: " + electionId + ", user: " + request.user_id + ", area: " + request.area_id);
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO election_staff_assignments (user_id, election_id, area_id)
+            VALUES (${request.user_id}::uuid, ${electionId}::uuid, ${request.area_id}::uuid)
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during staff assignment creation");
+            return error("Failed to create staff assignment");
+        }
+        
+        log:printInfo("Successfully created staff assignment for user: " + request.user_id);
+        
+        return {
+            user_id: request.user_id,
+            election_id: electionId,
+            area_id: request.area_id
+        };
+    } on fail var e {
+        log:printError("Database error during staff assignment creation: " + e.message());
+        return error("Database error during staff assignment creation: " + e.message());
+    }
+}
+
+// === DEVICE FUNCTIONS ===
+
+public isolated function createDevice(string areaId, CreateDeviceData request) returns Device|error {
+    log:printInfo("Creating device for area: " + areaId + " with type: " + request.device_type);
+    
+    do {
+        string deviceId = uuid:createType4AsString();
+        
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO devices (id, area_id, device_type)
+            VALUES (${deviceId}::uuid, ${areaId}::uuid, ${request.device_type})
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during device creation");
+            return error("Failed to create device");
+        }
+        
+        log:printInfo("Successfully created device with ID: " + deviceId);
+        
+        return {
+            id: deviceId,
+            area_id: areaId,
+            device_type: request.device_type
+        };
+    } on fail var e {
+        log:printError("Database error during device creation: " + e.message());
+        return error("Database error during device creation: " + e.message());
+    }
+}

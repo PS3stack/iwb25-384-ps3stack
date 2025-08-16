@@ -217,4 +217,83 @@ service /election on httpListener {
             return http:INTERNAL_SERVER_ERROR;
         }
     }
+
+    // === AREA ENDPOINTS ===
+
+    // POST /election/areas - Create a new area
+    isolated resource function post areas(@http:Payload election:CreateAreaData request) returns election:Area|http:BadRequest|http:InternalServerError {
+        log:printInfo("Received POST request to create area with name: " + request.name);
+        
+        do {
+            election:Area|error result = election:createArea(request);
+            if result is election:Area {
+                log:printInfo("Successfully created area with ID: " + result.id);
+                return result; 
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error creating area: " + errorMsg);
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in createArea: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    // POST /election/areas/{areaId}/devices/upload - Create a new device for an area
+    isolated resource function post areas/[string areaId]/devices/upload(@http:Payload election:CreateDeviceData request) returns election:Device|http:BadRequest|http:NotFound|http:InternalServerError {
+        log:printInfo("Received POST request to create device for area ID: " + areaId);
+        
+        do {
+            election:Device|error result = election:createDevice(areaId, request);
+            if result is election:Device {
+                log:printInfo("Successfully created device with ID: " + result.id);
+                return result; 
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error creating device: " + errorMsg);
+            if errorMsg.includes("not found") {
+                return http:NOT_FOUND;
+            }
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in createDevice: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    // === OBSERVER ENDPOINTS ===
+
+    // POST /election/{electionId}/observers - Add observer to election
+    isolated resource function post [string electionId]/observers(@http:Payload election:CreateObserverData request) returns election:ElectionStaffAssignment|http:BadRequest|http:NotFound|http:InternalServerError {
+        log:printInfo("Received POST request to create staff assignment for election ID: " + electionId);
+        
+        do {
+            election:ElectionStaffAssignment|error result = election:createObserver(electionId, request);
+            if result is election:ElectionStaffAssignment {
+                log:printInfo("Successfully created staff assignment for election ID: " + electionId);
+                return result; 
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error creating staff assignment: " + errorMsg);
+            if errorMsg.includes("not found") {
+                return http:NOT_FOUND;
+            }
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in createObserver: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
 }

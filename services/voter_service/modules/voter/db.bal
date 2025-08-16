@@ -8,7 +8,7 @@ configurable string DB_PASSWORD = ?;
 configurable string DB_NAME = ?;
 
 // The client is initialized once and is shared across the module.
-final postgresql:Client dbClient = check new (
+public final postgresql:Client dbClient = check new (
     host = DB_HOST,
     username = DB_USER,
     password = DB_PASSWORD,

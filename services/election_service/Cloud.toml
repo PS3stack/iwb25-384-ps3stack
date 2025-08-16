@@ -1,6 +1,6 @@
 [container.image]
 repository="ps3votecore" # Docker hub name
-name="auth_service" # container name
+name="election_service" # container name
 tag="v0.1.0"
 
 [settings]

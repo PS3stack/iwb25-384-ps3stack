@@ -81,3 +81,39 @@ public type Device record {|
 public type CreateDeviceData record {|
     string device_type;
 |};
+
+// Voter models
+public type Voter record {|
+    string id;
+    string election_id;
+    string voter_id_hash;
+    string name;
+    string status;
+|};
+
+public type CreateVoterData record {|
+    string national_id;  // Raw national ID that will be hashed
+    string name;
+    string? status;
+|};
+
+// Qualification models
+public type Qualification record {|
+    string id;
+    string title;
+    string? description;
+|};
+
+public type CreateQualificationData record {|
+    string title;
+    string? description;
+|};
+
+public type CandidateQualification record {|
+    string candidate_id;
+    string qualification_id;
+|};
+
+public type AssignQualificationData record {|
+    string qualification_id;
+|};

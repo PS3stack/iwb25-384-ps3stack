@@ -2,6 +2,7 @@ import ballerina/sql;
 import ballerina/time;
 import ballerina/uuid;
 import ballerina/log;
+import ballerina/crypto;
 
 public isolated function getAllElections() returns Election[]|error {
     stream<Election, sql:Error?> electionsStream = dbClient->query(`
@@ -404,5 +405,118 @@ public isolated function createDevice(string areaId, CreateDeviceData request) r
     } on fail var e {
         log:printError("Database error during device creation: " + e.message());
         return error("Database error during device creation: " + e.message());
+    }
+}
+
+// === VOTER FUNCTIONS ===
+
+public isolated function createVoter(string electionId, CreateVoterData request) returns Voter|error {
+    log:printInfo("Creating voter for election: " + electionId + " with national ID (will be hashed)");
+    
+    do {
+        string voterId = uuid:createType4AsString();
+        string status = request.status ?: "eligible"; // Default to 'eligible' if not provided
+        
+        // Hash the national ID for security
+        byte[] nationalIdBytes = request.national_id.toBytes();
+        byte[] hashedBytes = crypto:hashSha256(nationalIdBytes);
+        string voterIdHash = hashedBytes.toBase16();
+        
+        log:printInfo("Hashed national ID for voter: " + voterId);
+        
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO voters (id, election_id, voter_id_hash, name, status)
+            VALUES (${voterId}::uuid, ${electionId}::uuid, ${voterIdHash}, ${request.name}, ${status})
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during voter creation");
+            return error("Failed to create voter");
+        }
+        
+        log:printInfo("Successfully created voter with ID: " + voterId);
+        
+        return {
+            id: voterId,
+            election_id: electionId,
+            voter_id_hash: voterIdHash,
+            name: request.name,
+            status: status
+        };
+    } on fail var e {
+        log:printError("Database error during voter creation: " + e.message());
+        return error("Database error during voter creation: " + e.message());
+    }
+}
+
+// === QUALIFICATION FUNCTIONS ===
+
+public isolated function createQualification(CreateQualificationData request) returns Qualification|error {
+    log:printInfo("Creating qualification with title: " + request.title);
+    
+    do {
+        string qualificationId = uuid:createType4AsString();
+        
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO qualifications (id, title, description)
+            VALUES (${qualificationId}::uuid, ${request.title}, ${request.description})
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during qualification creation");
+            return error("Failed to create qualification");
+        }
+        
+        log:printInfo("Successfully created qualification with ID: " + qualificationId);
+        
+        return {
+            id: qualificationId,
+            title: request.title,
+            description: request.description
+        };
+    } on fail var e {
+        log:printError("Database error during qualification creation: " + e.message());
+        return error("Database error during qualification creation: " + e.message());
+    }
+}
+
+public isolated function getAllQualifications() returns Qualification[]|error {
+    log:printInfo("Retrieving all qualifications");
+    
+    do {
+        stream<Qualification, sql:Error?> qualificationsStream = dbClient->query(`
+            SELECT id, title, description 
+            FROM qualifications
+            ORDER BY title
+        `);
+        
+        Qualification[] qualifications = check from Qualification qualification in qualificationsStream select qualification;
+        
+        log:printInfo("Successfully retrieved " + qualifications.length().toString() + " qualifications");
+        return qualifications;
+    } on fail var e {
+        log:printError("Database error during qualification retrieval: " + e.message());
+        return error("Database error during qualification retrieval: " + e.message());
+    }
+}
+
+public isolated function assignQualificationToCandidate(string candidateId, AssignQualificationData request) returns error? {
+    log:printInfo("Assigning qualification " + request.qualification_id + " to candidate " + candidateId);
+    
+    do {
+        sql:ExecutionResult result = check dbClient->execute(`
+            INSERT INTO candidate_qualifications (candidate_id, qualification_id)
+            VALUES (${candidateId}::uuid, ${request.qualification_id}::uuid)
+        `);
+        
+        if result.affectedRowCount == 0 {
+            log:printError("No rows affected during qualification assignment");
+            return error("Failed to assign qualification to candidate");
+        }
+        
+        log:printInfo("Successfully assigned qualification to candidate");
+    } on fail var e {
+        log:printError("Database error during qualification assignment: " + e.message());
+        return error("Database error during qualification assignment: " + e.message());
     }
 }

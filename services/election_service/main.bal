@@ -296,4 +296,103 @@ service /election on httpListener {
             return http:INTERNAL_SERVER_ERROR;
         }
     }
+
+    // === VOTER ENDPOINTS ===
+
+    // POST /election/{electionId}/voters/upload - Add voter to election
+    isolated resource function post [string electionId]/voters/upload(@http:Payload election:CreateVoterData request) returns election:Voter|http:BadRequest|http:NotFound|http:InternalServerError {
+        log:printInfo("Received POST request to create voter for election ID: " + electionId);
+        
+        do {
+            election:Voter|error result = election:createVoter(electionId, request);
+            if result is election:Voter {
+                log:printInfo("Successfully created voter with ID: " + result.id);
+                return result; 
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error creating voter: " + errorMsg);
+            if errorMsg.includes("not found") {
+                return http:NOT_FOUND;
+            }
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in createVoter: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    // === QUALIFICATION ENDPOINTS ===
+
+    // POST /election/qualifications - Create a new qualification
+    isolated resource function post qualifications(@http:Payload election:CreateQualificationData request) returns election:Qualification|http:BadRequest|http:InternalServerError {
+        log:printInfo("Received POST request to create qualification with title: " + request.title);
+        
+        do {
+            election:Qualification|error result = election:createQualification(request);
+            if result is election:Qualification {
+                log:printInfo("Successfully created qualification with ID: " + result.id);
+                return result; 
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error creating qualification: " + errorMsg);
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") || errorMsg.includes("UNIQUE") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in createQualification: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    // GET /election/qualifications - Get all qualifications
+    isolated resource function get qualifications() returns election:Qualification[]|http:InternalServerError {
+        log:printInfo("Received GET request for all qualifications");
+        
+        do {
+            election:Qualification[]|error result = election:getAllQualifications();
+            if result is election:Qualification[] {
+                log:printInfo("Successfully retrieved " + result.length().toString() + " qualifications");
+                return result;
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error retrieving qualifications: " + errorMsg);
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in getAllQualifications: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    // POST /election/candidates/{candidateId}/qualifications - Assign qualification to candidate
+    isolated resource function post candidates/[string candidateId]/qualifications(@http:Payload election:AssignQualificationData request) returns json|http:BadRequest|http:NotFound|http:InternalServerError {
+        log:printInfo("Received POST request to assign qualification to candidate ID: " + candidateId);
+        
+        do {
+            error? result = election:assignQualificationToCandidate(candidateId, request);
+            if result is () {
+                log:printInfo("Successfully assigned qualification to candidate ID: " + candidateId);
+                return {"message": "Qualification assigned successfully."};
+            }
+
+            string errorMsg = result.message();
+            log:printError("Error assigning qualification: " + errorMsg);
+            if errorMsg.includes("not found") {
+                return http:NOT_FOUND;
+            }
+            if errorMsg.includes("Invalid") || errorMsg.includes("required") || errorMsg.includes("format") {
+                return http:BAD_REQUEST; 
+            }
+            return http:INTERNAL_SERVER_ERROR;
+        } on fail var e {
+            log:printError("Unexpected error in assignQualificationToCandidate: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
 }

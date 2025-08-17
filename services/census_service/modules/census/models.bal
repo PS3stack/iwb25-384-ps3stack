@@ -1,14 +1,14 @@
 import ballerina/time;
 
-public type Status "PLANNED"| "ACTIVE"| "COMPLETED"| "CANCELLED";
+public type Status "PLANNED"| "ACTIVE"| "COMPLETED"| "CANCELLED"| "INACTIVE";
 
 public type CensusProject record {
     int id?;
     string projectName;
     string description;
-    string startDate;
-    string endDate;
-    Status status; // "PLANNED", "ACTIVE", "COMPLETED", "CANCELLED"
+    time:Date startDate;
+    time:Date endDate;
+    boolean public_submission_enabled;
     string createdBy;
     time:Utc createdAt?;
     time:Utc updatedAt?;
@@ -28,16 +28,30 @@ public type CensusStaff record {
     time:Utc createdAt?;
 };
 
+// public type StaffAssignment record {
+//     int id?;
+//     int projectId;
+//     int staffId;
+//     string assignedDistrict;
+//     string assignedArea;
+//     string assignmentDate;
+//     string status; // "ASSIGNED", "IN_PROGRESS", "COMPLETED"
+//     int targetHouseholds?;
+//     int completedHouseholds?;
+// };
+
 public type StaffAssignment record {
-    int id?;
-    int projectId;
-    int staffId;
-    string assignedDistrict;
-    string assignedArea;
-    string assignmentDate;
-    string status; // "ASSIGNED", "IN_PROGRESS", "COMPLETED"
-    int targetHouseholds?;
-    int completedHouseholds?;
+        string census_id;
+        string project_name;
+        string description;
+        string start_date;
+        string end_date;
+        string area_id;
+        string area_name;
+        string area_description;
+        int total_households;
+        int completed_households;
+        int pending_households;
 };
 
 public type CensusSubmission record {
@@ -65,4 +79,29 @@ public type CensusForm record {
     string housingType;
     string facilities; // JSON string for utilities
     string economicStatus;
+};
+
+public type CreateAreaData record {|
+    string name;
+    string description;
+|};
+
+public type Area record {
+    int id?;
+    string name;
+    string description;
+    time:Utc createdAt?;
+};
+
+public type FieldStaff record{
+    string name;
+    string email;
+    string phone;
+    string assignedRegion;
+};
+
+public type FieldStaffAssignment record{
+    string staff_user_id;
+    string census_id;
+    string area_id;
 };

@@ -13,8 +13,8 @@ public function main() {
     // Initialize the database client on startup by referencing it.
     _ = voter:dbClient; 
     io:println(SERVICE_NAME + " started on port " + HTTP_PORT.toString());
-    io:println("✅ Database client initialized successfully.");
-    io:println("✅ Service is ready to accept requests.");
+    io:println("Database client initialized successfully.");
+    io:println("Service is ready to accept requests.");
 }
 
 // --- HTTP Service ---
@@ -44,11 +44,9 @@ service /voter on new http:Listener(HTTP_PORT) {
         }
     }
 
-    isolated resource function get .() returns json {
+    isolated resource function get health\-check() returns json {
         return {
-            message: "Welcome to the " + SERVICE_NAME,
-            "check-in_endpoint": "/voter/elections/{electionId}/voters/{voterId}/check-in (POST)",
-            "cast_vote_endpoint": "/voter/cast (POST)"
+            message: "Welcome to the " + SERVICE_NAME
         };
     }
 }

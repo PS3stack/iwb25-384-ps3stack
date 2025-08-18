@@ -14,8 +14,8 @@ public function main() {
     // Initialize the database client on startup
     _ = voter:dbClient; 
     io:println(SERVICE_NAME + " started on port " + HTTP_PORT.toString());
-    io:println("✅ Database client initialized successfully.");
-    io:println("✅ Service is ready to accept requests.");
+    io:println("Database client initialized successfully.");
+    io:println("Service is ready to accept requests.");
 }
 
 // --- HTTP Service ---

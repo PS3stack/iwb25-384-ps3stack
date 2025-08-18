@@ -14,9 +14,9 @@ public function main() {
     // Initialize the database client on startup by referencing it.
     _ = support:dbClient; 
     io:println(SERVICE_NAME + " started on port " + HTTP_PORT.toString());
-    io:println("✅ Database client initialized successfully.");
-    io:println("✅ OpenAI client initialized.");
-    io:println("✅ Service is ready to accept requests.");
+    io:println("Database client initialized successfully.");
+    io:println("OpenAI client initialized.");
+    io:println("Service is ready to accept requests.");
 }
 
 // --- HTTP Service ---

@@ -64,6 +64,10 @@ service /auth on new http:Listener(HTTP_PORT) {
         return response;
     }
 
+    resource function get .(http:Request req) returns json|error {
+        return auth:decodeRequest(req);
+    }
+    
     resource function post logout(http:Request req) returns http:Response|error {
         // Extract token from cookie for session cleanup if needed
         string|error token = auth:extractTokenFromRequest(req);

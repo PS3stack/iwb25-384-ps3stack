@@ -2,6 +2,7 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/log;
 import voter_service.voter;
+import ballerina/time;
 
 // --- Configurable Variables ---
 configurable int HTTP_PORT = ?;
@@ -63,10 +64,13 @@ service /voter on new http:Listener(HTTP_PORT) {
         }
     }
 
-    // GET /voter/health-check
-    isolated resource function get health\-check() returns json {
+    // GET /voter/health
+    isolated resource function get health() returns json {
+        log:printInfo("Voter Service: Health check endpoint called");
         return {
-            message: "Welcome to the " + SERVICE_NAME
+            "service": "Voter Service",
+            "status": "healthy",
+            "timestamp": time:utcNow()
         };
     }
 }

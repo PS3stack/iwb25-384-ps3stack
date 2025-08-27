@@ -1,0 +1,30 @@
+# API Gateway Configuration Example
+# Copy this file to config.toml and modify values as needed
+
+# HTTP server port for the API Gateway
+HTTP_PORT = 8080
+
+# Backend microservice URLs
+# Update these URLs based on your deployment environment
+
+# Authentication service - handles user login/logout and JWT token management
+authServiceUrl = "http://localhost:8085"
+
+# Election service - manages elections, candidates, qualifications, and areas
+electionServiceUrl = "http://localhost:8082"
+
+# Voter service - handles voter check-in and vote casting
+voterServiceUrl = "http://localhost:8084"
+
+# Support service - provides chat support and user assistance
+supportServiceUrl = "http://localhost:8083"
+
+# Census service - manages population and demographic data
+censusServiceUrl = "http://localhost:8081"
+
+# Development Notes:
+# - Ensure all backend services are running on their respective ports
+# - For production deployment, replace localhost with actual service hosts
+# - Consider using service discovery for dynamic service resolution
+# - Enable HTTPS in production environments
+# - Configure appropriate timeouts for service clients

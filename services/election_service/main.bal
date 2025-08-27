@@ -1,6 +1,8 @@
+
 import ballerina/http;
 import ballerina/io;
 import ballerina/log;
+import ballerina/time;
 import election_service.election;
 
 configurable int HTTP_PORT = ?;
@@ -14,6 +16,15 @@ public function main() {
 listener http:Listener httpListener = new(HTTP_PORT);
 
 service /election on httpListener {
+
+    isolated resource function get health() returns json {
+        log:printInfo("Election Service: Health check endpoint called");
+        return {
+            "service": "Election Service",
+            "status": "healthy",
+            "timestamp": time:utcNow()[0]
+        };
+    }
 
     isolated resource function get .() returns election:Election[]|http:InternalServerError {
         log:printInfo("Received request to get all elections");

@@ -2,6 +2,7 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/log;
 import support_service.support;
+import ballerina/time;
 
 // --- Configurable Variables ---
 configurable int HTTP_PORT = ?;
@@ -32,5 +33,15 @@ service /support on new http:Listener(HTTP_PORT) {
             log:printError("Failed to get chat reply", result);
             return http:INTERNAL_SERVER_ERROR;
         }
+    }
+
+    // GET /support/health
+    isolated resource function get health() returns json {
+        log:printInfo("Support Service: Health check endpoint called");
+        return {
+            "service": "Support Service",
+            "status": "healthy",
+            "timestamp": time:utcNow()
+        };
     }
 }

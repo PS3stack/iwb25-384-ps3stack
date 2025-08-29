@@ -2,11 +2,22 @@ import census_service.census;
 
 import ballerina/http;
 import ballerina/io;
+import ballerina/log;
+import ballerina/time;
 
 configurable int HTTP_PORT = ?;
 final string SERVICE_NAME = "Census Service";
 
 service /census on new http:Listener(HTTP_PORT) {
+    isolated resource function get health() returns json {
+        log:printInfo("Census Service: Health check endpoint called");
+        return {
+            "service": "Census Service",
+            "status": "healthy",
+            "timestamp": time:utcNow()[0]
+        };
+    }
+
     resource function post .(@http:Payload census:CensusProject project) returns json|http:InternalServerError {
         int|error result = census:createCensusProject(project);
         if result is error {

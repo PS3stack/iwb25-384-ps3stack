@@ -2,6 +2,8 @@ import auth_service.authservice as auth;
 
 import ballerina/http;
 import ballerina/io;
+import ballerina/log;
+import ballerina/time;
 
 // --- Configurable Variables ---
 configurable int HTTP_PORT = ?;
@@ -15,6 +17,15 @@ public function main() {
 }
 
 service /auth on new http:Listener(HTTP_PORT) {
+    isolated resource function get health() returns json {
+        log:printInfo("Auth Service: Health check endpoint called");
+        return {
+            "service": "Auth Service",
+            "status": "healthy",
+            "timestamp": time:utcNow()[0]
+        };
+    }
+
     resource function post observer/login(auth:LoginRequest req) returns auth:LoginResponse|http:Response|error {
         auth:LoginResponse|error response = auth:loginUser(req);
         if response is error {

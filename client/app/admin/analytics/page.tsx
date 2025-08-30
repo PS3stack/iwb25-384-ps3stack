@@ -15,9 +15,19 @@ import { CensusAnalytics } from "@/components/analytics/census-analytics";
 import { BarChart3, Download, RefreshCw } from "lucide-react";
 import { RoleLayout } from "@/components/layout/role-layout";
 import { adminSidebarItems } from "@/lib/admin-navigation";
+import { useEffect, useState } from "react";
 
 export default function AdminAnalytics() {
-  const analyticsStats = [
+  interface AnalyticsStat {
+    title: string;
+    value: string;
+    description: string;
+    change: string;
+    trend: string;
+  }
+  
+  const [analyticsStats, setAnalyticsStats] = useState<AnalyticsStat[]>([]);
+  const analyticsstats = [
     {
       title: "Total Data Points",
       value: "2.4M",
@@ -48,7 +58,22 @@ export default function AdminAnalytics() {
     },
   ];
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/analytics/stats");
+        // const data = await response.json();
+        // setAnalyticsStats(data);
+        setAnalyticsStats(analyticsstats);
+      } catch (error) {
+        console.error("Error fetching analytics stats:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
+
     <RoleLayout
       role="admin"
       sidebarItems={adminSidebarItems}

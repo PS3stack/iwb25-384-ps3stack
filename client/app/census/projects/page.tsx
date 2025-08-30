@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { censusSidebarItems } from "@/lib/census-navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CensusFormModal } from "@/components/census/census-form-modal"
 import { Plus, Search, Edit, Trash2, Eye, Calendar, Users, MapPin, BarChart3 } from "lucide-react"
 
-const mockProjects = [
+const mockprojects = [
   {
     id: 1,
     name: "National Population Census 2024",
@@ -51,8 +51,23 @@ const mockProjects = [
 ]
 
 export default function CensusProjectsPage() {
+  const [mockProjects, setMockProjects] = useState(mockprojects)
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/projects");
+        // const data = await response.json();
+        // setMockProjects(data.projects);
+        setMockProjects(mockprojects);
+      } catch (error) {
+        console.error("Error fetching projects data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredProjects = mockProjects.filter(
     (project) =>

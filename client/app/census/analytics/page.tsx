@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { CensusAnalytics } from "@/components/analytics/census-analytics"
 import { BarChart3, Download, RefreshCw, Users } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function CensusAnalyticsPage() {
-  const censusStats = [
+  const censusstats = [
     {
       title: "Total Households",
       value: "63.4K",
@@ -37,6 +38,22 @@ export default function CensusAnalyticsPage() {
       trend: "up",
     },
   ]
+
+  const [censusStats, setCensusStats] = useState<typeof censusstats>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/analytics");
+        // const data = await response.json();
+        // setCensusStats(data.stats);
+        setCensusStats(censusstats);
+      } catch (error) {
+        console.error("Error fetching census analytics data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">

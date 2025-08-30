@@ -17,8 +17,9 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const dashboardStats = [
+const dashboardstats = [
   {
     title: "Active Projects",
     value: "8",
@@ -49,7 +50,7 @@ const dashboardStats = [
   },
 ]
 
-const activeProjects = [
+const activeprojects = [
   {
     id: 1,
     name: "National Population Census 2024",
@@ -79,7 +80,7 @@ const activeProjects = [
   },
 ]
 
-const recentActivities = [
+const recentactivities = [
   {
     id: 1,
     type: "project",
@@ -110,7 +111,7 @@ const recentActivities = [
   },
 ]
 
-const quickActions = [
+const quickactions = [
   {
     title: "Create Census Project",
     description: "Set up a new census survey project",
@@ -142,6 +143,31 @@ const quickActions = [
 ]
 
 export default function CensusDashboard() {
+  const [dashboardStats, setDashboardStats] = useState<typeof dashboardstats>([]);
+  const [activeProjects, setActiveProjects] = useState<typeof activeprojects>([]);
+  const [recentActivities, setRecentActivities] = useState<typeof recentactivities>([]);
+  const [quickActions, setQuickActions] = useState<typeof quickactions>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/dashboard");
+        // const data = await response.json();
+        // setDashboardStats(data.stats);
+        // setActiveProjects(data.projects);
+        // setRecentActivities(data.activities);
+        // setQuickActions(data.actions);
+        setDashboardStats(dashboardstats);
+        setActiveProjects(activeprojects);
+        setRecentActivities(recentactivities);
+        setQuickActions(quickactions);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <RoleLayout role="census" sidebarItems={censusSidebarItems} currentPath="/census">
       <div className="p-6 space-y-6">

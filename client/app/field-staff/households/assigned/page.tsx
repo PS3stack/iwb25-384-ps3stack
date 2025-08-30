@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { fieldStaffSidebarItems } from "@/lib/field-staff-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { AssignedHouseholdsTable } from "@/components/field-staff/assigned-households-table"
 import { Calendar, CheckCircle, Clock, AlertTriangle } from "lucide-react"
 
-const mockHouseholds = [
+const mockhouseholds = [
   {
     id: "H-2024-1567",
     address: "123 Main Street, Block A",
@@ -56,6 +56,21 @@ const mockHouseholds = [
 
 export default function AssignedHouseholdsPage() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [mockHouseholds, setMockHouseholds] = useState(mockhouseholds)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/households");
+        // const data = await response.json();
+        // setMockHouseholds(data.households);
+        setMockHouseholds(mockhouseholds);
+      } catch (error) {
+        console.error("Error fetching households data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredHouseholds = mockHouseholds.filter(
     (household) =>

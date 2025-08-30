@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { HelpCircle, MessageCircle, BookOpen, Search, Phone, Mail, Clock, CheckCircle } from "lucide-react"
+import { use, useEffect, useState } from "react"
 
 export default function SupportCenter() {
-  const supportStats = [
+  const supportstats = [
     {
       title: "Response Time",
       value: "< 2 hours",
@@ -43,7 +44,7 @@ export default function SupportCenter() {
     },
   ]
 
-  const faqCategories = [
+  const faqcategories = [
     {
       title: "Voter Registration",
       description: "How to register, update information, and check status",
@@ -70,7 +71,7 @@ export default function SupportCenter() {
     },
   ]
 
-  const quickActions = [
+  const quickactions = [
     {
       title: "Submit Support Ticket",
       description: "Get help with specific issues",
@@ -100,6 +101,28 @@ export default function SupportCenter() {
       color: "bg-amber-600",
     },
   ]
+
+  const [supportStats, setSupportStats] = useState<typeof supportstats>(supportstats)
+  const [faqCategories, setFaqCategories] = useState<typeof faqcategories>(faqcategories)
+  const [quickActions, setQuickActions] = useState<typeof quickactions>(quickactions)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/support");
+        // const data = await response.json();
+        // setSupportStats(data.supportStats);
+        // setFaqCategories(data.faqCategories);
+        // setQuickActions(data.quickActions);
+        setSupportStats(supportstats);
+        setFaqCategories(faqcategories);
+        setQuickActions(quickactions);
+      } catch (error) {
+        console.error("Error fetching support data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">

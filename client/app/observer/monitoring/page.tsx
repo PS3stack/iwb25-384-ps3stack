@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Clock, AlertTriangle, CheckCircle, Radio } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function ElectionMonitoring() {
-  const activeElections = [
+  const activeelections = [
     {
       id: 1,
       title: "Presidential Election 2024",
@@ -35,7 +36,7 @@ export default function ElectionMonitoring() {
     },
   ]
 
-  const monitoringChecklist = [
+  const monitoringchecklist = [
     { item: "Polling station setup complete", status: "completed" },
     { item: "Ballot boxes sealed and secured", status: "completed" },
     { item: "Voting materials verified", status: "completed" },
@@ -45,6 +46,25 @@ export default function ElectionMonitoring() {
     { item: "Security measures in place", status: "pending" },
   ]
 
+  const [activeElections, setActiveElections] = useState(activeelections)
+  const [monitoringChecklist, setMonitoringChecklist] = useState(monitoringchecklist)
+
+  useEffect(()=>{
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/dashboard");
+        // const data = await response.json();
+        // setRecentReports(data.recentReports);
+        // setActiveAssignments(data.activeAssignments);
+        // setObserverStats(data.observerStats);
+        setActiveElections(activeelections);
+        setMonitoringChecklist(monitoringchecklist);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchData();
+  },[])
   return (
     <div className="space-y-8">
       {/* Header */}

@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { fieldStaffSidebarItems } from "@/lib/field-staff-navigation"
 import { FileText, Users, MapPin, CheckCircle, Clock, AlertTriangle, TrendingUp, Home, Upload } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const dashboardStats = [
+const dashboardstats = [
   {
     title: "Assigned Households",
     value: "245",
@@ -38,7 +39,7 @@ const dashboardStats = [
   },
 ]
 
-const activeCensusProjects = [
+const activecensusProjects = [
   {
     id: 1,
     name: "National Population Census 2024",
@@ -61,7 +62,7 @@ const activeCensusProjects = [
   },
 ]
 
-const recentActivities = [
+const recentactivities = [
   {
     id: 1,
     type: "submission",
@@ -92,7 +93,7 @@ const recentActivities = [
   },
 ]
 
-const quickActions = [
+const quickactions = [
   {
     title: "Submit Household Data",
     description: "Submit collected household survey data",
@@ -124,6 +125,31 @@ const quickActions = [
 ]
 
 export default function FieldStaffDashboard() {
+  const [dashboardStats, setDashboardStats] = useState<typeof dashboardstats>([]);
+  const [activeCensusProjects, setActiveCensusProjects] = useState<typeof activecensusProjects>([]);
+  const [recentActivities, setRecentActivities] = useState<typeof recentactivities>([]);
+  const [quickActions, setQuickActions] = useState<typeof quickactions>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/dashboard");
+        // const data = await response.json();
+        // setDashboardStats(data.dashboardStats);
+        // setActiveCensusProjects(data.activeCensusProjects);
+        // setRecentActivities(data.recentActivities);
+        // setQuickActions(data.quickActions);
+        setDashboardStats(dashboardstats);
+        setActiveCensusProjects(activecensusProjects);
+        setRecentActivities(recentactivities);
+        setQuickActions(quickactions);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <RoleLayout role="field-staff" sidebarItems={fieldStaffSidebarItems} currentPath="/field-staff">
       <div className="p-6 space-y-6">

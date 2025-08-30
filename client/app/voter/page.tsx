@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Vote, User, Calendar, CheckCircle, Clock, AlertCircle } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function VoterDashboard() {
-  const voterStats = [
+  const voterstats = [
     {
       title: "Registration Status",
       value: "Verified",
@@ -42,7 +43,7 @@ export default function VoterDashboard() {
     },
   ]
 
-  const upcomingElections = [
+  const upcomingelections = [
     {
       id: 1,
       title: "Presidential Election 2024",
@@ -58,6 +59,25 @@ export default function VoterDashboard() {
       description: "Municipal council representatives",
     },
   ]
+
+  const [voterStats, setVoterStats] = useState<typeof voterstats>(voterstats)
+  const [upcomingElections, setUpcomingElections] = useState<typeof upcomingelections>(upcomingelections)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/voter");
+        // const data = await response.json();
+        // setVoterStats(data.voterStats);
+        // setUpcomingElections(data.upcomingElections);
+        setVoterStats(voterstats);
+        setUpcomingElections(upcomingelections);
+      } catch (error) {
+        console.error("Error fetching voter data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">

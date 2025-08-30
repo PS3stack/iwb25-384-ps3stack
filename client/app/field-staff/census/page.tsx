@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { fieldStaffSidebarItems } from "@/lib/field-staff-navigation"
@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress"
 import { CensusCardGrid } from "@/components/field-staff/census-card-grid"
 import { CheckCircle } from "lucide-react"
 
-const availableCensus = [
+const availablecensus = [
   {
     id: 1,
     name: "National Population Census 2024",
@@ -55,6 +55,21 @@ const availableCensus = [
 
 export default function CensusSelectionPage() {
   const [selectedCensus, setSelectedCensus] = useState<number | null>(1)
+  const [availableCensus, setAvailableCensus] = useState(availablecensus)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/census");
+        // const data = await response.json();
+        // setAvailableCensus(data.census);
+        setAvailableCensus(availablecensus);
+      } catch (error) {
+        console.error("Error fetching census data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <RoleLayout role="field-staff" sidebarItems={fieldStaffSidebarItems} currentPath="/field-staff/census">

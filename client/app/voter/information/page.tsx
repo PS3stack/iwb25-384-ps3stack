@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { User, MapPin, Mail, Edit, CheckCircle } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function VoterInformation() {
-  const voterInfo = {
+  const voterinfo = {
     fullName: "John Michael Smith",
     dateOfBirth: "1985-03-15",
     nationalId: "ID123456789",
@@ -19,6 +20,21 @@ export default function VoterInformation() {
     district: "District 5",
     status: "Active",
   }
+  const [voterInfo, setVoterInfo] = useState<typeof voterinfo>(voterinfo)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/voter");
+        // const data = await response.json();
+        // setVoterInfo(data.voterInfo);
+        setVoterInfo(voterinfo);
+      } catch (error) {
+        console.error("Error fetching voter information:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">

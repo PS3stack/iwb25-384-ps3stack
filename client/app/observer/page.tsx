@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye, FileText, Radio, AlertTriangle, CheckCircle, Clock, Users } from "lucide-react"
+import { use, useEffect, useState } from "react"
 
 export default function ObserverDashboard() {
-  const observerStats = [
+  const observerstats = [
     {
       title: "Active Assignments",
       value: "3",
@@ -42,7 +43,7 @@ export default function ObserverDashboard() {
     },
   ]
 
-  const activeAssignments = [
+  const activeassignments = [
     {
       id: 1,
       election: "Presidential Election 2024",
@@ -61,7 +62,7 @@ export default function ObserverDashboard() {
     },
   ]
 
-  const recentReports = [
+  const recentreports = [
     {
       id: 1,
       title: "Polling Station Setup Report",
@@ -78,6 +79,27 @@ export default function ObserverDashboard() {
     },
   ]
 
+  const [recentReports, setRecentReports] = useState<typeof recentreports>([]);
+  const [activeAssignments, setActiveAssignments] = useState<typeof activeassignments>([]);
+  const [observerStats, setObserverStats] = useState<typeof observerstats>([]);
+
+  useEffect(() => {
+     const fetchData = async () => {
+       try {
+         // const response = await fetch("/api/dashboard");
+         // const data = await response.json();
+         // setRecentReports(data.recentReports);
+         // setActiveAssignments(data.activeAssignments);
+         // setObserverStats(data.observerStats);
+         setRecentReports(recentreports);
+         setActiveAssignments(activeassignments);
+         setObserverStats(observerstats);
+       } catch (error) {
+         console.error("Error fetching dashboard data:", error);
+       }
+     };
+     fetchData();
+  },[])
   return (
     <div className="space-y-8">
       {/* Header */}

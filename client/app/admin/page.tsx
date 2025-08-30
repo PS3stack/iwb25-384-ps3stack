@@ -18,8 +18,9 @@ import {
   Clock,
   TrendingUp,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const dashboardStats = [
+const dashboardstats = [
   {
     title: "Active Elections",
     value: "12",
@@ -50,7 +51,7 @@ const dashboardStats = [
   },
 ]
 
-const recentActivities = [
+const recentactivities = [
   {
     id: 1,
     type: "election",
@@ -81,7 +82,7 @@ const recentActivities = [
   },
 ]
 
-const quickActions = [
+const quickactions = [
   {
     title: "Create Election",
     description: "Set up a new election with candidates and settings",
@@ -113,6 +114,46 @@ const quickActions = [
 ]
 
 export default function AdminDashboard() {
+  const [dashboardStats, setDashboardStats] = useState<{
+    title: string;
+    value: string;
+    change: string;
+    icon: React.ComponentType;
+    color: string;
+  }[]>([]);
+  const [recentActivities, setRecentActivities] = useState<{
+    id: number;
+    type: string;
+    title: string;
+    time: string;
+    status: string;
+  }[]>([]);
+  const [quickActions, setQuickActions] = useState<{
+    title: string;
+    description: string;
+    href: string;
+    icon: React.ComponentType;
+    color: string;
+  }[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/dashboard");
+        // const data = await response.json();
+        // setDashboardStats(data.stats);
+        // setRecentActivities(data.activities);
+        // setQuickActions(data.actions);
+        setDashboardStats(dashboardstats);
+        setRecentActivities(recentactivities);
+        setQuickActions(quickactions);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <RoleLayout role="admin" sidebarItems={adminSidebarItems} currentPath="/admin">
       <div className="p-6 space-y-6">

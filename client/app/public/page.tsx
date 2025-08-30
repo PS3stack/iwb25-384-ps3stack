@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Vote, Users, BarChart3, Calendar, TrendingUp, MapPin, Clock } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function PublicDashboard() {
-  const electionStats = [
+  const electionstats = [
     {
       title: "Active Elections",
       value: "2",
@@ -43,7 +44,7 @@ export default function PublicDashboard() {
     },
   ]
 
-  const activeElections = [
+  const activeelections = [
     {
       id: 1,
       title: "Presidential Election 2024",
@@ -64,7 +65,7 @@ export default function PublicDashboard() {
     },
   ]
 
-  const recentResults = [
+  const recentresults = [
     {
       id: 1,
       title: "State Governor Election",
@@ -82,6 +83,28 @@ export default function PublicDashboard() {
       status: "completed",
     },
   ]
+
+  const [activeElections, setActiveElections] = useState<typeof activeelections>(activeelections)
+  const [recentResults, setRecentResults] = useState<typeof recentresults>(recentresults)
+  const [electionStats, setElectionStats] = useState<typeof electionstats>(electionstats)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/dashboard");
+        // const data = await response.json();
+        // setRecentReports(data.recentReports);
+        // setActiveAssignments(data.activeAssignments);
+        // setObserverStats(data.observerStats);
+        setActiveElections(activeelections);
+        setRecentResults(recentresults);
+        setElectionStats(electionstats);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { adminSidebarItems } from "@/lib/admin-navigation"
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileText, Download, Calendar, BarChart3, Users, Vote, Eye, Filter, RefreshCw } from "lucide-react"
 
-const reportTypes = [
+const reporttypes = [
   {
     id: "election-summary",
     title: "Election Summary Report",
@@ -68,8 +68,23 @@ const reportTypes = [
 ]
 
 export default function ReportsPage() {
+  const [reportTypes, setReportTypes] = useState(reporttypes)
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/reports");
+        // const data = await response.json();
+        // setReportTypes(data);
+        setReportTypes(reporttypes);
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const categories = ["all", ...Array.from(new Set(reportTypes.map((r) => r.category)))]
   const statuses = ["all", "Ready", "Generating", "Error"]

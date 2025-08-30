@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { VoteConfirmationModal } from "@/components/voter/vote-confirmation-modal"
 import { Vote, Award, Clock, CheckCircle } from "lucide-react"
 
-const mockElections = [
+const mockelections = [
   {
     id: 1,
     title: "City Council Election 2024",
@@ -61,6 +61,22 @@ const mockElections = [
     ],
   },
 ]
+
+const [mockElections, setMockElections] = useState<typeof mockelections>([])
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      // const response = await fetch("/api/elections");
+      // const data = await response.json();
+      // setMockElections(data.elections);
+      setMockElections(mockelections);
+    } catch (error) {
+      console.error("Error fetching elections:", error);
+    }
+  };
+  fetchData();
+}, [])
 
 export default function BallotPage() {
   const [selections, setSelections] = useState<Record<number, number>>({})

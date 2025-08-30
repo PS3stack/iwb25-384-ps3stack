@@ -13,9 +13,17 @@ import { ElectionAnalytics } from "@/components/analytics/election-analytics";
 import { Vote, Download, RefreshCw, TrendingUp } from "lucide-react";
 import { RoleLayout } from "@/components/layout/role-layout";
 import { adminSidebarItems } from "@/lib/admin-navigation";
+import { useState, useEffect } from "react";
 
 export default function ElectionAnalyticsPage() {
-  const electionStats = [
+  const [electionStats, setElectionStats] = useState<{
+    title: string;
+    value: string;
+    description: string;
+    change: string;
+    trend: string;
+  }[]>([]);
+  const electionstats = [
     {
       title: "Active Elections",
       value: "2",
@@ -45,6 +53,19 @@ export default function ElectionAnalyticsPage() {
       trend: "up",
     },
   ];
+  useEffect(() => {
+      const fetchData = async () => {
+          try {
+            // const response = await fetch("/api/elections/stats");
+            // const data = await response.json();
+            // setElectionStats(data);
+            setElectionStats(electionstats);
+          } catch (error) {
+            console.error("Error fetching election stats:", error);
+          }
+      };
+      fetchData();
+  }, [])
 
   return (
     <RoleLayout

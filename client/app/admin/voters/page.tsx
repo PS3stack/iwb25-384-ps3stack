@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { adminSidebarItems } from "@/lib/admin-navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import { CSVUploader } from "@/components/admin/csv-uploader"
 import { AddVoterForm } from "@/components/admin/add-voter-form"
 import { Plus, Search, Upload, Users, UserCheck, UserX, Download } from "lucide-react"
 
-const mockVoters = [
+const mockvoters = [
   {
     id: 1,
     name: "John Doe",
@@ -49,6 +49,21 @@ export default function VotersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploader, setShowUploader] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [mockVoters, setMockVoters] = useState(mockvoters)  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/voters");
+        // const data = await response.json();
+        // setMockVoters(data);
+        setMockVoters(mockvoters);
+      } catch (error) {
+        console.error("Error fetching voters:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredVoters = mockVoters.filter(
     (voter) =>

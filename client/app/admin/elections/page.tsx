@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { adminSidebarItems } from "@/lib/admin-navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ElectionFormModal } from "@/components/admin/election-form-modal"
 import { Plus, Search, Edit, Trash2, Eye, Calendar, Users, MapPin } from "lucide-react"
 
-const mockElections = [
+const mockelections = [
   {
     id: 1,
     title: "Presidential Election 2024",
@@ -48,8 +48,24 @@ const mockElections = [
 ]
 
 export default function ElectionsPage() {
+  const [mockElections, setMockElections] = useState(mockelections)
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/elections");
+        // const data = await response.json();
+        // setMockElections(data);
+        setMockElections(mockelections);
+      } catch (error) {
+        console.error("Error fetching elections:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredElections = mockElections.filter(
     (election) =>

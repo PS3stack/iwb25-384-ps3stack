@@ -1,17 +1,39 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { RoleLayout } from "@/components/layout/role-layout"
-import { adminSidebarItems } from "@/lib/admin-navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CandidateForm } from "@/components/admin/candidate-form"
-import { Plus, Search, Edit, Trash2, Eye, Users, Award, FileText } from "lucide-react"
+import { useEffect, useState } from "react";
+import { RoleLayout } from "@/components/layout/role-layout";
+import { adminSidebarItems } from "@/lib/admin-navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { CandidateForm } from "@/components/admin/candidate-form";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  Users,
+  Award,
+  FileText,
+} from "lucide-react";
 
-const mockCandidates = [
+const mockcandidates = [
   {
     id: 1,
     name: "Alice Johnson",
@@ -42,40 +64,74 @@ const mockCandidates = [
     votes: 456,
     photo: "/professional-woman-diverse.png",
   },
-]
+];
 
 export default function CandidatesPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showAddForm, setShowAddForm] = useState(false)
+  interface Candidate {
+    id: number;
+    name: string;
+    party: string;
+    position: string;
+    election: string;
+    status: string;
+    votes: number;
+    photo: string;
+  }
+  
+  const [mockCandidates, setMockCandidates] = useState<Candidate[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/candidates");
+        // const data = await response.json();
+        // setCandidates(data);
+        setMockCandidates(mockcandidates);
+      } catch (error) {
+        console.error("Error fetching candidates:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredCandidates = mockCandidates.filter(
     (candidate) =>
-      candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.party.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.position.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      candidate?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate?.party.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate?.position.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "Pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "Rejected":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
-    <RoleLayout role="admin" sidebarItems={adminSidebarItems} currentPath="/admin/candidates">
+    <RoleLayout
+      role="admin"
+      sidebarItems={adminSidebarItems}
+      currentPath="/admin/candidates"
+    >
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Candidate Management</h1>
-            <p className="text-muted-foreground">Manage election candidates and their qualifications</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Candidate Management
+            </h1>
+            <p className="text-muted-foreground">
+              Manage election candidates and their qualifications
+            </p>
           </div>
           <Button onClick={() => setShowAddForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -90,7 +146,9 @@ export default function CandidatesPage() {
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 text-chart-1" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Candidates</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Candidates
+                  </p>
                   <p className="text-2xl font-bold">18</p>
                 </div>
               </div>
@@ -112,7 +170,9 @@ export default function CandidatesPage() {
               <div className="flex items-center space-x-2">
                 <FileText className="h-4 w-4 text-chart-4" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Review</p>
+                  <p className="text-sm text-muted-foreground">
+                    Pending Review
+                  </p>
                   <p className="text-2xl font-bold">3</p>
                 </div>
               </div>
@@ -137,7 +197,9 @@ export default function CandidatesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>All Candidates</CardTitle>
-                <CardDescription>Manage candidate registrations and approvals</CardDescription>
+                <CardDescription>
+                  Manage candidate registrations and approvals
+                </CardDescription>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="relative">
@@ -182,7 +244,9 @@ export default function CandidatesPage() {
                     <TableCell>{candidate.position}</TableCell>
                     <TableCell>{candidate.election}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(candidate.status)}>{candidate.status}</Badge>
+                      <Badge className={getStatusColor(candidate.status)}>
+                        {candidate.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>{candidate.votes.toLocaleString()}</TableCell>
                     <TableCell>
@@ -210,12 +274,12 @@ export default function CandidatesPage() {
           <CandidateForm
             onClose={() => setShowAddForm(false)}
             onSubmit={(data) => {
-              console.log("Candidate added:", data)
-              setShowAddForm(false)
+              console.log("Candidate added:", data);
+              setShowAddForm(false);
             }}
           />
         )}
       </div>
     </RoleLayout>
-  )
+  );
 }

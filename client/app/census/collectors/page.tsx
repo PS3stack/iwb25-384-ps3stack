@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RoleLayout } from "@/components/layout/role-layout"
 import { censusSidebarItems } from "@/lib/census-navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AddCollectorForm } from "@/components/census/add-collector-form"
 import { Plus, Search, Users, UserCheck, MapPin, Calendar } from "lucide-react"
 
-const mockCollectors = [
+const mockcollectors = [
   {
     id: 1,
     name: "Sarah Johnson",
@@ -51,8 +51,24 @@ const mockCollectors = [
 ]
 
 export default function CollectorsPage() {
+
+  const [mockCollectors, setMockCollectors] = useState(mockcollectors)
   const [searchTerm, setSearchTerm] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // const response = await fetch("/api/collectors");
+        // const data = await response.json();
+        // setMockCollectors(data.collectors);
+        setMockCollectors(mockcollectors);
+      } catch (error) {
+        console.error("Error fetching collectors data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredCollectors = mockCollectors.filter(
     (collector) =>

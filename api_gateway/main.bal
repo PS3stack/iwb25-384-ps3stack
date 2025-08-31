@@ -1,13 +1,11 @@
 
 import ballerina/http;
 import ballerina/log;
-// Ballerina 2201.x does not support 'import ballerina/string;'.
-// Implement join and replace manually below.
 import api_gateway.gateway;
 import api_gateway.routing;
 import api_gateway.health;
 
-configurable int HTTP_PORT = 8080;
+configurable int HTTP_PORT = ?;
 configurable string authServiceUrl = "http://localhost:8085";
 configurable string electionServiceUrl = "http://localhost:8082";
 configurable string voterServiceUrl = "http://localhost:8084";

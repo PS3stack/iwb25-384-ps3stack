@@ -43,10 +43,6 @@ cd ps3stack-ballerina-competition
 ```bash
 # Start all microservices (run each in a separate terminal)
 
-# API Gateway
-cd api_gateway
-bal run
-
 # Auth Service
 cd ../services/auth_service
 bal run
@@ -66,6 +62,12 @@ bal run
 # Census Service
 cd ../census_service
 bal run
+
+# API Gateway
+cd api_gateway
+bal run
+
+# After running the API Gateway you can see the microservices are up and running.
 ```
 
 ### 3. Start Frontend

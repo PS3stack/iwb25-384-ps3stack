@@ -88,20 +88,8 @@ export default function SupportCenter() {
   const [showChat, setShowChat] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      try {
-        const response = await supportAPI.getChatHistory()
-        setChatMessages(response.data || [])
-      } catch (error) {
-        console.error("Error fetching chat history:", error)
-      }
-    }
-    
-    if (showChat) {
-      fetchChatHistory()
-    }
-  }, [showChat])
+  // Note: Chat history is managed locally for now
+  // Can be enhanced later to fetch from backend if needed
 
   const handleSendMessage = async () => {
     if (!currentMessage.trim()) return

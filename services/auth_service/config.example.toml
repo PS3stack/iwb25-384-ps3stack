@@ -1,0 +1,13 @@
+# HTTP Listener Port
+HTTP_PORT = 8082
+
+# Database Connection Details
+[auth_service.authservice]
+DB_HOST = <DB_HOST>
+DB_USER = <DB_USER>
+DB_PASSWORD = <DB_PASSWORD>
+DB_NAME = <DB_NAME>
+
+# JWT Configuration
+JWT_SECRET = <JWT_SECRET>
+TOKEN_EXPIRY = <TOKEN_EXPIRY> # Hours

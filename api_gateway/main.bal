@@ -6,11 +6,11 @@ import api_gateway.routing;
 import api_gateway.health;
 
 configurable int HTTP_PORT = ?;
-configurable string authServiceUrl = "http://localhost:8085";
-configurable string electionServiceUrl = "http://localhost:8082";
-configurable string voterServiceUrl = "http://localhost:8084";
-configurable string supportServiceUrl = "http://localhost:8083";
-configurable string censusServiceUrl = "http://localhost:8081";
+configurable string authServiceUrl = ?;
+configurable string electionServiceUrl = ?;
+configurable string voterServiceUrl = ?;
+configurable string supportServiceUrl = ?;
+configurable string censusServiceUrl = ?;
 
 // Main service initialization
 public function main() returns error? {

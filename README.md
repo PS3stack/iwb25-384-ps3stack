@@ -114,6 +114,44 @@ Each service includes `.toml.example` files with placeholder values. Copy these 
 
 **Important**: Never commit actual API keys to version control. The `.example` files are safe to commit as they contain only placeholders.
 
+## 🗄️ Database Setup
+
+### Database Restoration
+
+This project includes a pre-configured database dump with sample data including elections, candidates, and user accounts.
+
+**Database Dump Location**: `database/database.bak`
+
+### Restore Database with Neon DB
+
+To repopulate your Neon database with the sample data:
+
+```bash
+pg_restore -v -d "<neon_database_connection_string>" database/database.bak
+```
+
+**Example**:
+```bash
+pg_restore -v -d "postgresql://username:password@host:5432/database?sslmode=require" database/database.bak
+```
+
+### Database Contents
+
+The database dump includes:
+- **Sample Elections**: Pre-configured elections with candidates and photos
+- **User Accounts**: Demo accounts for all user roles (admin, observer, field staff, polling staff, voters)
+- **Census Data**: Sample population and household records
+- **System Configuration**: Initial setup for all microservices
+
+### Manual Database Setup
+
+If you prefer to set up the database manually, each service includes:
+- **Schema definitions** in service README files
+- **Migration scripts** in `database_migration.sql` files
+- **Sample data creation** in service initialization code
+
+**Note**: The database connection strings are configured in each service's `Config.toml` file.
+
 ## 🏛️ System Components
 
 | Component | Port | Description |

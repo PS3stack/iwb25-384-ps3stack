@@ -27,7 +27,7 @@ This system follows a microservices architecture with the following components:
 ### Prerequisites
 
 - **Ballerina** (Swan Lake Update 8 or later)
-- **Node.js** (18+ recommended)
+- **Node.js** (20+ recommended)
 - **npm** or **yarn**
 - **Docker** (optional, for containerized deployment)
 

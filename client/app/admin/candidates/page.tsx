@@ -32,75 +32,110 @@ import {
   Award,
   FileText,
 } from "lucide-react";
+import { electionAPI, apiHelpers } from "@/api/api";
+import { useToast } from "@/hooks/use-toast";
 
-const mockcandidates = [
-  {
-    id: 1,
-    name: "Alice Johnson",
-    party: "Democratic Party",
-    position: "Mayor",
-    election: "City Council Election",
-    status: "Approved",
-    votes: 1247,
-    photo: "/professional-woman-diverse.png",
-  },
-  {
-    id: 2,
-    name: "Robert Smith",
-    party: "Republican Party",
-    position: "Council Member",
-    election: "City Council Election",
-    status: "Pending",
-    votes: 892,
-    photo: "/professional-man.png",
-  },
-  {
-    id: 3,
-    name: "Maria Garcia",
-    party: "Independent",
-    position: "School Board",
-    election: "School Board Election",
-    status: "Approved",
-    votes: 456,
-    photo: "/professional-woman-diverse.png",
-  },
-];
+interface Candidate {
+  id: string;
+  name: string;
+  party?: string;
+  position?: string;
+  election_id: string;
+  status?: string;
+  votes?: number;
+  photo?: string;
+  election?: any;
+}
 
 export default function CandidatesPage() {
-  interface Candidate {
-    id: number;
-    name: string;
-    party: string;
-    position: string;
-    election: string;
-    status: string;
-    votes: number;
-    photo: string;
-  }
-  
-  const [mockCandidates, setMockCandidates] = useState<Candidate[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const response = await fetch("/api/candidates");
-        // const data = await response.json();
-        // setCandidates(data);
-        setMockCandidates(mockcandidates);
+        setLoading(true);
+        // Get all elections first, then get candidates for each
+        const electionsResponse = await electionAPI.getAllElections();
+        const allCandidates: Candidate[] = [];
+        
+        // For each election, get its candidates
+        for (const election of electionsResponse.data) {
+          try {
+            const candidatesResponse = await electionAPI.getCandidatesByElection(election.id);
+            const electionCandidates = candidatesResponse.data.map((candidate: any) => ({
+              ...apiHelpers.formatCandidate(candidate),
+              election: election
+            }));
+            allCandidates.push(...electionCandidates);
+          } catch (error) {
+            console.error(`Error fetching candidates for election ${election.id}:`, error);
+          }
+        }
+        
+        setCandidates(allCandidates);
       } catch (error) {
         console.error("Error fetching candidates:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch candidates. Please try again.",
+          variant: "destructive",
+        });
+        // Fallback to empty array if API fails
+        setCandidates([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [toast]);
 
-  const filteredCandidates = mockCandidates.filter(
+  const handleCreateCandidate = async (data: any) => {
+    try {
+      const response = await electionAPI.createCandidate(data);
+      const newCandidate = apiHelpers.formatCandidate(response.data);
+      setCandidates(prev => [...prev, newCandidate]);
+      setShowAddForm(false);
+      toast({
+        title: "Success",
+        description: "Candidate created successfully",
+      });
+    } catch (error) {
+      console.error("Error creating candidate:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create candidate. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteCandidate = async (id: string) => {
+    try {
+      await electionAPI.deleteCandidate(id);
+      setCandidates(prev => prev.filter(candidate => candidate.id !== id));
+      toast({
+        title: "Success",
+        description: "Candidate deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting candidate:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete candidate. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredCandidates = candidates.filter(
     (candidate) =>
-      candidate?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate?.party.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate?.position.toLowerCase().includes(searchTerm.toLowerCase())
+      candidate?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate?.party?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate?.position?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -115,6 +150,26 @@ export default function CandidatesPage() {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  // Calculate stats
+  const totalCandidates = candidates.length;
+  const approvedCandidates = candidates.filter(c => c.status === "Approved").length;
+  const pendingCandidates = candidates.filter(c => c.status === "Pending").length;
+  const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+
+  if (loading) {
+    return (
+      <RoleLayout
+        role="admin"
+        sidebarItems={adminSidebarItems}
+        currentPath="/admin/candidates"
+      >
+        <div className="p-6 space-y-6">
+          <div className="text-center">Loading candidates...</div>
+        </div>
+      </RoleLayout>
+    );
+  }
 
   return (
     <RoleLayout
@@ -149,7 +204,7 @@ export default function CandidatesPage() {
                   <p className="text-sm text-muted-foreground">
                     Total Candidates
                   </p>
-                  <p className="text-2xl font-bold">18</p>
+                  <p className="text-2xl font-bold">{totalCandidates}</p>
                 </div>
               </div>
             </CardContent>
@@ -160,7 +215,7 @@ export default function CandidatesPage() {
                 <Award className="h-4 w-4 text-chart-3" />
                 <div>
                   <p className="text-sm text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold">15</p>
+                  <p className="text-2xl font-bold">{approvedCandidates}</p>
                 </div>
               </div>
             </CardContent>
@@ -173,7 +228,7 @@ export default function CandidatesPage() {
                   <p className="text-sm text-muted-foreground">
                     Pending Review
                   </p>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">{pendingCandidates}</p>
                 </div>
               </div>
             </CardContent>
@@ -184,7 +239,7 @@ export default function CandidatesPage() {
                 <Users className="h-4 w-4 text-chart-2" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Votes</p>
-                  <p className="text-2xl font-bold">2,595</p>
+                  <p className="text-2xl font-bold">{totalVotes.toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -240,15 +295,15 @@ export default function CandidatesPage() {
                         <span className="font-medium">{candidate.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{candidate.party}</TableCell>
-                    <TableCell>{candidate.position}</TableCell>
-                    <TableCell>{candidate.election}</TableCell>
+                    <TableCell>{candidate.party || "N/A"}</TableCell>
+                    <TableCell>{candidate.position || "N/A"}</TableCell>
+                    <TableCell>{candidate.election?.title || candidate.election_id}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(candidate.status)}>
-                        {candidate.status}
+                      <Badge className={getStatusColor(candidate.status || "Pending")}>
+                        {candidate.status || "Pending"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{candidate.votes.toLocaleString()}</TableCell>
+                    <TableCell>{(candidate.votes || 0).toLocaleString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button variant="ghost" size="sm">
@@ -257,7 +312,11 @@ export default function CandidatesPage() {
                         <Button variant="ghost" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteCandidate(candidate.id)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -273,10 +332,7 @@ export default function CandidatesPage() {
         {showAddForm && (
           <CandidateForm
             onClose={() => setShowAddForm(false)}
-            onSubmit={(data) => {
-              console.log("Candidate added:", data);
-              setShowAddForm(false);
-            }}
+            onSubmit={handleCreateCandidate}
           />
         )}
       </div>

@@ -5,11 +5,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { HelpCircle, MessageCircle, BookOpen, Search, Phone, Mail, Clock, CheckCircle } from "lucide-react"
-import { use, useEffect, useState } from "react"
+import { Textarea } from "@/components/ui/textarea"
+import { HelpCircle, MessageCircle, BookOpen, Search, Phone, Mail, Clock, CheckCircle, Send } from "lucide-react"
+import { useEffect, useState } from "react"
+import { supportAPI } from "@/api/api"
+import { useToast } from "@/hooks/use-toast"
+
+interface ChatMessage {
+  id: string
+  message: string
+  is_user: boolean
+  timestamp: string
+  response?: string
+}
 
 export default function SupportCenter() {
-  const supportstats = [
+  const [supportStats] = useState([
     {
       title: "Response Time",
       value: "< 2 hours",
@@ -42,9 +53,9 @@ export default function SupportCenter() {
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
-  ]
+  ])
 
-  const faqcategories = [
+  const [faqCategories] = useState([
     {
       title: "Voter Registration",
       description: "How to register, update information, and check status",
@@ -69,60 +80,61 @@ export default function SupportCenter() {
       articles: 25,
       icon: "Settings",
     },
-  ]
+  ])
 
-  const quickactions = [
-    {
-      title: "Submit Support Ticket",
-      description: "Get help with specific issues",
-      icon: MessageCircle,
-      action: "Create Ticket",
-      color: "bg-blue-600",
-    },
-    {
-      title: "Live Chat Support",
-      description: "Chat with our support team",
-      icon: MessageCircle,
-      action: "Start Chat",
-      color: "bg-green-600",
-    },
-    {
-      title: "Phone Support",
-      description: "Call our support hotline",
-      icon: Phone,
-      action: "Call Now",
-      color: "bg-purple-600",
-    },
-    {
-      title: "Email Support",
-      description: "Send us an email",
-      icon: Mail,
-      action: "Send Email",
-      color: "bg-amber-600",
-    },
-  ]
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [currentMessage, setCurrentMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [showChat, setShowChat] = useState(false)
+  const { toast } = useToast()
 
-  const [supportStats, setSupportStats] = useState<typeof supportstats>(supportstats)
-  const [faqCategories, setFaqCategories] = useState<typeof faqcategories>(faqcategories)
-  const [quickActions, setQuickActions] = useState<typeof quickactions>(quickactions)
+  // Note: Chat history is managed locally for now
+  // Can be enhanced later to fetch from backend if needed
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // const response = await fetch("/api/support");
-        // const data = await response.json();
-        // setSupportStats(data.supportStats);
-        // setFaqCategories(data.faqCategories);
-        // setQuickActions(data.quickActions);
-        setSupportStats(supportstats);
-        setFaqCategories(faqcategories);
-        setQuickActions(quickactions);
-      } catch (error) {
-        console.error("Error fetching support data:", error);
+  const handleSendMessage = async () => {
+    if (!currentMessage.trim()) return
+    
+    try {
+      setIsLoading(true)
+      const response = await supportAPI.sendChatMessage({
+        message: currentMessage,
+        sessionHistory: []
+      })
+      
+      // Add the new message to the chat
+      const newMessage: ChatMessage = {
+        id: Date.now().toString(),
+        message: currentMessage,
+        is_user: true,
+        timestamp: new Date().toISOString(),
+        response: response.data.reply
       }
-    };
-    fetchData();
-  }, []);
+      
+      setChatMessages(prev => [...prev, newMessage])
+      setCurrentMessage("")
+      
+      toast({
+        title: "Message sent",
+        description: "Our AI assistant has responded to your question.",
+      })
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -177,44 +189,82 @@ export default function SupportCenter() {
         })}
       </div>
 
-      {/* Quick Actions */}
+      {/* AI Chat Support */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5" />
-            Get Support
+            <MessageCircle className="w-5 h-5" />
+            AI Chat Support
           </CardTitle>
-          <CardDescription>Choose how you'd like to get help</CardDescription>
+          <CardDescription>Get instant help from our AI assistant powered by OpenAI</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => {
-              const Icon = action.icon
-              return (
-                <motion.div
-                  key={action.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+          {!showChat ? (
+            <div className="text-center py-8">
+              <Button onClick={() => setShowChat(true)} className="bg-blue-600 hover:bg-blue-700">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Start Chat with AI Assistant
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Chat Messages */}
+              <div className="h-96 overflow-y-auto border rounded-lg p-4 space-y-4">
+                {chatMessages.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Start a conversation with our AI assistant!</p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => (
+                    <div key={msg.id} className="space-y-2">
+                      {/* User Message */}
+                      <div className="flex justify-end">
+                        <div className="bg-blue-600 text-white rounded-lg p-3 max-w-xs">
+                          <p className="text-sm">{msg.message}</p>
+                          <p className="text-xs opacity-75 mt-1">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                      {/* AI Response */}
+                      {msg.response && (
+                        <div className="flex justify-start">
+                          <div className="bg-gray-100 rounded-lg p-3 max-w-xs">
+                            <p className="text-sm">{msg.response}</p>
+                            <p className="text-xs text-gray-500 mt-1">AI Assistant</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {/* Message Input */}
+              <div className="flex gap-2">
+                <Textarea
+                  value={currentMessage}
+                  onChange={(e) => setCurrentMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your question here..."
+                  className="flex-1 min-h-[40px] max-h-32"
+                  disabled={isLoading}
+                />
+                <Button 
+                  onClick={handleSendMessage} 
+                  disabled={isLoading || !currentMessage.trim()}
+                  className="px-4"
                 >
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-6 text-center space-y-4">
-                      <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mx-auto`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900">{action.title}</h3>
-                        <p className="text-sm text-slate-600 mt-1">{action.description}</p>
-                      </div>
-                      <Button size="sm" className="w-full">
-                        {action.action}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )
-            })}
-          </div>
+                  {isLoading ? (
+                    <Clock className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import SupportTrigger from "@/components/shared/SupportTrigger"
 
 const dashboardstats = [
   {
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
     title: string;
     value: string;
     change: string;
-    icon: React.ComponentType;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
   }[]>([]);
   const [recentActivities, setRecentActivities] = useState<{
@@ -132,7 +133,7 @@ export default function AdminDashboard() {
     title: string;
     description: string;
     href: string;
-    icon: React.ComponentType;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
   }[]>([]);
 
@@ -163,10 +164,13 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage elections, users, and system operations</p>
           </div>
-          <Button>
-            <Settings className="h-4 w-4 mr-2" />
-            System Settings
-          </Button>
+          <div className="flex items-center gap-3">
+            <SupportTrigger size="sm" />
+            <Button>
+              <Settings className="h-4 w-4 mr-2" />
+              System Settings
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}

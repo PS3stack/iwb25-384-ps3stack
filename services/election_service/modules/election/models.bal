@@ -32,18 +32,21 @@ public type Candidate record {|
     string area_id;
     string name;
     string? party;
+    string? photo_url;
 |};
 
 public type CreateCandidateData record {|
     string area_id;
     string name;
     string? party;
+    string? photo_url;
 |};
 
 public type UpdateCandidateData record {|
     string area_id;
     string name;
     string? party;
+    string? photo_url;
 |};
 
 // Area models

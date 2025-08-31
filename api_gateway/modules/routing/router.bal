@@ -34,6 +34,10 @@ public isolated function forwardToAuthService(string method, string path, json? 
         return gateway:createErrorResponse(503, "Authentication service temporarily unavailable");
     }
     
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    
     log:printInfo("Successfully forwarded request to auth service");
     return response;
 }
@@ -63,6 +67,10 @@ public isolated function forwardRequestWithoutAuth(string method, string path, j
         log:printError("Error forwarding request to " + serviceName + ": " + response.message());
         return gateway:createErrorResponse(503, serviceName + " temporarily unavailable");
     }
+    
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
     
     log:printInfo("Successfully forwarded request to " + serviceName);
     return response;
@@ -101,6 +109,10 @@ public isolated function forwardRequestWithAuth(string method, string path, json
         return gateway:createErrorResponse(503, serviceName + " temporarily unavailable");
     }
     
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    
     log:printInfo("Successfully forwarded request to " + serviceName);
     return response;
 }
@@ -118,6 +130,8 @@ public isolated function forwardWithRoleCheck(string method, string path, json? 
         authError = auth:checkPollingStaffOrAdminRole(originalReq);
     } else if roleType == "field_staff_or_admin" {
         authError = auth:checkFieldStaffOrAdminRole(originalReq);
+    } else if roleType == "voter" {
+        authError = auth:checkVoterRole(originalReq);
     } else {
         authError = auth:checkAuthentication(originalReq);
     }
@@ -150,6 +164,10 @@ public isolated function forwardWithRoleCheck(string method, string path, json? 
         return gateway:createErrorResponse(503, serviceName + " temporarily unavailable");
     }
     
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    
     log:printInfo("Successfully forwarded authorized request to " + serviceName);
     return response;
 }
@@ -179,6 +197,11 @@ public isolated function forwardToVoterService(string method, string path, json?
 
 public isolated function forwardToVoterServiceWithPollingStaffRole(string method, string path, json? payload, http:Request req, http:Client voterClient) returns http:Response|error {
     return forwardWithRoleCheck(method, path, payload, req, voterClient, "Voter Service", "polling_staff_or_admin");
+}
+
+// Voter-specific endpoints for casting votes
+public isolated function forwardToVoterServiceWithVoterRole(string method, string path, json? payload, http:Request req, http:Client voterClient) returns http:Response|error {
+    return forwardWithRoleCheck(method, path, payload, req, voterClient, "Voter Service", "voter");
 }
 
 // Health check routing (no authentication required)

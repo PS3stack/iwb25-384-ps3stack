@@ -151,5 +151,5 @@ service /census on new http:Listener(HTTP_PORT) {
 }
 
 public function main() {
-    io:println("Service started on port " + HTTP_PORT.toString());
+    io:println("Census Service started on port " + HTTP_PORT.toString());
 }

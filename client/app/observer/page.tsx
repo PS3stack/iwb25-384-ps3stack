@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye, FileText, Radio, AlertTriangle, CheckCircle, Clock, Users } from "lucide-react"
 import { use, useEffect, useState } from "react"
+import SupportTrigger from "@/components/shared/SupportTrigger"
 
 export default function ObserverDashboard() {
   const observerstats = [
@@ -108,10 +109,13 @@ export default function ObserverDashboard() {
           <h1 className="text-3xl font-bold text-slate-900">Observer Dashboard</h1>
           <p className="text-slate-600 mt-2">Monitor elections and submit observation reports.</p>
         </div>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-          <Eye className="w-4 h-4 mr-1" />
-          Certified Observer
-        </Badge>
+        <div className="flex items-center gap-3">
+          <SupportTrigger size="sm" />
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            <Eye className="w-4 h-4 mr-1" />
+            Certified Observer
+          </Badge>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -246,10 +250,10 @@ export default function ObserverDashboard() {
               <Radio className="w-6 h-6" />
               <span>Live Updates</span>
             </Button>
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-transparent">
+            <SupportTrigger variant="button" size="lg" className="h-auto p-4 flex flex-col items-center gap-2 bg-transparent">
               <Users className="w-6 h-6" />
               <span>Contact Support</span>
-            </Button>
+            </SupportTrigger>
           </div>
         </CardContent>
       </Card>

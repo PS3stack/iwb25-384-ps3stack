@@ -8,16 +8,24 @@ import ballerina/time;
 import ballerina/log;
 import api_gateway.gateway;
 
-// Extract and validate JWT token from HTTP cookies
+// Extract and validate JWT token from HTTP cookies or Authorization header
 public isolated function extractAndValidateToken(http:Request req) returns gateway:UserClaims|gateway:AuthError {
-    // Extract authentication token from cookies
-    http:Cookie[] cookies = req.getCookies();
     string? token = ();
     
-    foreach http:Cookie cookie in cookies {
-        if cookie.name == "auth_token" {
-            token = cookie.value;
-            break;
+    // First, try to extract token from Authorization header
+    string|error authHeader = req.getHeader("Authorization");
+    if authHeader is string && authHeader.startsWith("Bearer ") {
+        token = authHeader.substring(7); // Remove "Bearer " prefix
+        log:printInfo("Token extracted from Authorization header");
+    } else {
+        // If not found in header, try cookies
+        http:Cookie[] cookies = req.getCookies();
+        foreach http:Cookie cookie in cookies {
+            if cookie.name == "auth_token" {
+                token = cookie.value;
+                log:printInfo("Token extracted from cookie");
+                break;
+            }
         }
     }
     
@@ -60,7 +68,7 @@ public isolated function extractAndValidateToken(http:Request req) returns gatew
         return {message: "Token expired", statusCode: 401};
     }
     
-    log:printInfo("Authentication successful for user: " + claims.sub + " with role: " + claims.role_id);
+    log:printInfo("Authentication successful for user: " + claims.sub + " with role: " + claims.role_id.toString());
     return claims;
 }
 
@@ -81,7 +89,7 @@ public isolated function checkAdminRole(http:Request req) returns gateway:AuthEr
     }
     
     // Role ID 1 = Admin
-    if result.role_id != gateway:ADMIN {
+    if result.role_id != gateway:ADMIN_ROLE {
         log:printWarn("Authorization failed: Admin access required for user: " + result.sub);
         return {message: "Administrator access required", statusCode: 403};
     }
@@ -96,7 +104,7 @@ public isolated function checkAdminOrObserverRole(http:Request req) returns gate
     }
     
     // Role ID 1 = Admin, 2 = Observer
-    if result.role_id != gateway:ADMIN && result.role_id != gateway:OBSERVER {
+    if result.role_id != gateway:ADMIN_ROLE && result.role_id != gateway:OBSERVER_ROLE {
         log:printWarn("Authorization failed: Admin or Observer access required for user: " + result.sub);
         return {message: "Administrator or Observer access required", statusCode: 403};
     }
@@ -111,7 +119,7 @@ public isolated function checkPollingStaffOrAdminRole(http:Request req) returns 
     }
     
     // Role ID 1 = Admin, 4 = Polling Staff
-    if result.role_id != gateway:ADMIN && result.role_id != gateway:POLLING_STAFF {
+    if result.role_id != gateway:ADMIN_ROLE && result.role_id != gateway:POLLING_STAFF_ROLE {
         log:printWarn("Authorization failed: Polling Staff or Admin access required for user: " + result.sub);
         return {message: "Polling Staff or Administrator access required", statusCode: 403};
     }
@@ -126,9 +134,24 @@ public isolated function checkFieldStaffOrAdminRole(http:Request req) returns ga
     }
     
     // Role ID 1 = Admin, 3 = Field Staff
-    if result.role_id != gateway:ADMIN && result.role_id != gateway:FIELD_STAFF {
+    if result.role_id != gateway:ADMIN_ROLE && result.role_id != gateway:FIELD_STAFF_ROLE {
         log:printWarn("Authorization failed: Field Staff or Admin access required for user: " + result.sub);
         return {message: "Field Staff or Administrator access required", statusCode: 403};
+    }
+    return ();
+}
+
+// Voter role check - for voter operations
+public isolated function checkVoterRole(http:Request req) returns gateway:AuthError? {
+    gateway:UserClaims|gateway:AuthError result = extractAndValidateToken(req);
+    if result is gateway:AuthError {
+        return result;
+    }
+    
+    // Role ID 5 = Voter
+    if result.role_id != gateway:VOTER_ROLE {
+        log:printWarn("Authorization failed: Voter access required for user: " + result.sub);
+        return {message: "Voter access required", statusCode: 403};
     }
     return ();
 }
@@ -139,10 +162,10 @@ public isolated function getCurrentUser(http:Request req) returns gateway:UserCl
 }
 
 // Check if user has specific role
-public isolated function hasRole(http:Request req, gateway:UserRole role) returns boolean {
+public isolated function hasRole(http:Request req, int roleId) returns boolean {
     gateway:UserClaims|gateway:AuthError result = extractAndValidateToken(req);
     if result is gateway:AuthError {
         return false;
     }
-    return result.role_id == role;
+    return result.role_id == roleId;
 }

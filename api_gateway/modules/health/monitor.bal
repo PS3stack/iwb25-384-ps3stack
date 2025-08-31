@@ -81,7 +81,7 @@ public isolated function checkAllServicesHealth(map<http:Client> serviceClients)
 
 // Startup health check with detailed logging
 public isolated function performStartupHealthCheck(map<http:Client> serviceClients) {
-    log:printInfo("🚀 Performing startup health check for all backend services...");
+    log:printInfo("Performing startup health check for all backend services...");
     
     int totalServices = serviceClients.length();
     int healthyServices = 0;
@@ -92,20 +92,20 @@ public isolated function performStartupHealthCheck(map<http:Client> serviceClien
             boolean isHealthy = checkServiceHealth(httpClient, serviceName);
             if isHealthy {
                 healthyServices = healthyServices + 1;
-                log:printInfo("✅ " + serviceName + " - Ready");
+                log:printInfo(serviceName + " - Ready");
             } else {
-                log:printWarn("⚠️ " + serviceName + " - Not responding");
+                log:printWarn(serviceName + " - Not responding");
             }
         } else {
-            log:printError("❌ " + serviceName + " - Client configuration error");
+            log:printError(serviceName + " - Client configuration error");
         }
     }
-    
-    log:printInfo("🏥 Health Check Summary: " + healthyServices.toString() + "/" + totalServices.toString() + " services healthy");
-    
+
+    log:printInfo("Health Check Summary: " + healthyServices.toString() + "/" + totalServices.toString() + " services healthy");
+
     if healthyServices == totalServices {
-        log:printInfo("🎉 All backend services are healthy! API Gateway is ready to serve requests.");
+        log:printInfo("All backend services are healthy! API Gateway is ready to serve requests.");
     } else {
-        log:printWarn("⚠️ Some backend services are not responding. API Gateway will continue but some features may be unavailable.");
+        log:printWarn("Some backend services are not responding. API Gateway will continue but some features may be unavailable.");
     }
 }

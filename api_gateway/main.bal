@@ -1,22 +1,20 @@
 
 import ballerina/http;
 import ballerina/log;
-// Ballerina 2201.x does not support 'import ballerina/string;'.
-// Implement join and replace manually below.
 import api_gateway.gateway;
 import api_gateway.routing;
 import api_gateway.health;
 
-configurable int HTTP_PORT = 8080;
-configurable string authServiceUrl = "http://localhost:8085";
-configurable string electionServiceUrl = "http://localhost:8082";
-configurable string voterServiceUrl = "http://localhost:8084";
-configurable string supportServiceUrl = "http://localhost:8083";
-configurable string censusServiceUrl = "http://localhost:8081";
+configurable int HTTP_PORT = ?;
+configurable string authServiceUrl = ?;
+configurable string electionServiceUrl = ?;
+configurable string voterServiceUrl = ?;
+configurable string supportServiceUrl = ?;
+configurable string censusServiceUrl = ?;
 
 // Main service initialization
 public function main() returns error? {
-    log:printInfo("🚀 Starting PS3Stack API Gateway on port " + HTTP_PORT.toString());
+    log:printInfo("Starting PS3Stack API Gateway on port " + HTTP_PORT.toString());
     map<http:Client> clients = check gateway:getServiceClients(
         authServiceUrl,
         electionServiceUrl,
@@ -25,11 +23,23 @@ public function main() returns error? {
         censusServiceUrl
     );
     health:performStartupHealthCheck(clients);
-    log:printInfo("✅ PS3Stack API Gateway is ready to serve requests");
+    log:printInfo("PS3Stack API Gateway is ready to serve requests");
     return;
 }
 
 service / on new http:Listener(HTTP_PORT) {
+    
+    // CORS preflight handler
+    resource function options [string... pathSegments](http:Request req) returns http:Response {
+        http:Response response = new;
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.statusCode = 200;
+        return response;
+    }
+    
     // Root endpoint - API information
     resource function get .() returns json {
         return {
@@ -152,8 +162,14 @@ service / on new http:Listener(HTTP_PORT) {
                     // Health check doesn't need authentication
                     if fixedPath == "/voter/health" {
                         return routing:forwardRequestWithoutAuth(method, fixedPath, payload is error ? () : payload, req, voterClient, "Voter Service");
+                    } else if fixedPath == "/voter/cast" {
+                        // Casting votes requires voter role
+                        return routing:forwardToVoterServiceWithVoterRole(method, fixedPath, payload is error ? () : payload, req, voterClient);
+                    } else if fixedPath.includes("/check-in") {
+                        // Check-in operations require polling staff or admin role
+                        return routing:forwardToVoterServiceWithPollingStaffRole(method, fixedPath, payload is error ? () : payload, req, voterClient);
                     } else {
-                        // Other endpoints need authentication
+                        // Other endpoints need basic authentication
                         return routing:forwardToVoterService(method, fixedPath, payload is error ? () : payload, req, voterClient);
                     }
                 } else {

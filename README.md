@@ -14,11 +14,11 @@ This system follows a microservices architecture with the following components:
 - **Census Service** - Population census management
 - **Client Application** - Next.js frontend with real-time UI
 
-## 📊 System Architecture Diagram for election
+## 📊 Sequence Diagram for election
 
 ![alt text](readme/election-process.png)
 
-## 📊 System Architecture Diagram for census
+## 📊 Sequence Diagram for census
 
 ![alt text](readme/census-process.png)
 

@@ -130,6 +130,8 @@ public isolated function forwardWithRoleCheck(string method, string path, json? 
         authError = auth:checkPollingStaffOrAdminRole(originalReq);
     } else if roleType == "field_staff_or_admin" {
         authError = auth:checkFieldStaffOrAdminRole(originalReq);
+    } else if roleType == "voter" {
+        authError = auth:checkVoterRole(originalReq);
     } else {
         authError = auth:checkAuthentication(originalReq);
     }
@@ -195,6 +197,11 @@ public isolated function forwardToVoterService(string method, string path, json?
 
 public isolated function forwardToVoterServiceWithPollingStaffRole(string method, string path, json? payload, http:Request req, http:Client voterClient) returns http:Response|error {
     return forwardWithRoleCheck(method, path, payload, req, voterClient, "Voter Service", "polling_staff_or_admin");
+}
+
+// Voter-specific endpoints for casting votes
+public isolated function forwardToVoterServiceWithVoterRole(string method, string path, json? payload, http:Request req, http:Client voterClient) returns http:Response|error {
+    return forwardWithRoleCheck(method, path, payload, req, voterClient, "Voter Service", "voter");
 }
 
 // Health check routing (no authentication required)

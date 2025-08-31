@@ -162,8 +162,14 @@ service / on new http:Listener(HTTP_PORT) {
                     // Health check doesn't need authentication
                     if fixedPath == "/voter/health" {
                         return routing:forwardRequestWithoutAuth(method, fixedPath, payload is error ? () : payload, req, voterClient, "Voter Service");
+                    } else if fixedPath == "/voter/cast" {
+                        // Casting votes requires voter role
+                        return routing:forwardToVoterServiceWithVoterRole(method, fixedPath, payload is error ? () : payload, req, voterClient);
+                    } else if fixedPath.includes("/check-in") {
+                        // Check-in operations require polling staff or admin role
+                        return routing:forwardToVoterServiceWithPollingStaffRole(method, fixedPath, payload is error ? () : payload, req, voterClient);
                     } else {
-                        // Other endpoints need authentication
+                        // Other endpoints need basic authentication
                         return routing:forwardToVoterService(method, fixedPath, payload is error ? () : payload, req, voterClient);
                     }
                 } else {

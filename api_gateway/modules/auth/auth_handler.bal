@@ -141,6 +141,21 @@ public isolated function checkFieldStaffOrAdminRole(http:Request req) returns ga
     return ();
 }
 
+// Voter role check - for voter operations
+public isolated function checkVoterRole(http:Request req) returns gateway:AuthError? {
+    gateway:UserClaims|gateway:AuthError result = extractAndValidateToken(req);
+    if result is gateway:AuthError {
+        return result;
+    }
+    
+    // Role ID 5 = Voter
+    if result.role_id != gateway:VOTER_ROLE {
+        log:printWarn("Authorization failed: Voter access required for user: " + result.sub);
+        return {message: "Voter access required", statusCode: 403};
+    }
+    return ();
+}
+
 // Get current user from request
 public isolated function getCurrentUser(http:Request req) returns gateway:UserClaims|gateway:AuthError {
     return extractAndValidateToken(req);

@@ -174,6 +174,7 @@ export const authAPI = {
   loginObserver: (credentials) => api.post('/auth/observer/login', credentials),
   loginFieldStaff: (credentials) => api.post('/auth/field_staff/login', credentials),
   loginPollingStaff: (credentials) => api.post('/auth/polling_staff/login', credentials),
+  loginVoter: (credentials) => api.post('/auth/voter/login', credentials),
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth'),
   verifyToken: () => api.get('/auth'),

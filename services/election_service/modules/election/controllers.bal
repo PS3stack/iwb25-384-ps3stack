@@ -190,7 +190,7 @@ public isolated function getCandidatesByElectionId(string electionId) returns Ca
     _ = check getElectionById(electionId);
     
     stream<Candidate, sql:Error?> candidatesStream = dbClient->query(`
-        SELECT id, election_id, area_id, name, party 
+        SELECT id, election_id, area_id, name, party, photo_url 
         FROM candidates 
         WHERE election_id = ${electionId}::uuid
     `);
@@ -211,9 +211,9 @@ public isolated function createCandidate(string electionId, CreateCandidateData 
     
     do {
         sql:ExecutionResult result = check dbClient->execute(`
-            INSERT INTO candidates (id, election_id, area_id, name, party)
+            INSERT INTO candidates (id, election_id, area_id, name, party, photo_url)
             VALUES (${candidateId}::uuid, ${electionId}::uuid, ${request.area_id}::uuid, 
-                    ${request.name}, ${request.party})
+                    ${request.name}, ${request.party}, ${request.photo_url})
         `);
         
         if result.affectedRowCount == 0 {
@@ -228,7 +228,8 @@ public isolated function createCandidate(string electionId, CreateCandidateData 
             election_id: electionId,
             area_id: request.area_id,
             name: request.name,
-            party: request.party
+            party: request.party,
+            photo_url: request.photo_url
         };
     } on fail var e {
         log:printError("Database error during candidate creation: " + e.message());
@@ -240,7 +241,7 @@ public isolated function getCandidateById(string id) returns Candidate|error {
     log:printInfo("Attempting to fetch candidate with ID: " + id);
     
     stream<Candidate, sql:Error?> candidatesStream = dbClient->query(`
-        SELECT id, election_id, area_id, name, party 
+        SELECT id, election_id, area_id, name, party, photo_url 
         FROM candidates 
         WHERE id = ${id}::uuid
     `);
@@ -268,7 +269,8 @@ public isolated function updateCandidate(string id, UpdateCandidateData request)
             UPDATE candidates 
             SET area_id = ${request.area_id}::uuid, 
                 name = ${request.name}, 
-                party = ${request.party}
+                party = ${request.party},
+                photo_url = ${request.photo_url}
             WHERE id = ${id}::uuid
         `);
         
@@ -284,7 +286,8 @@ public isolated function updateCandidate(string id, UpdateCandidateData request)
             election_id: existingCandidate.election_id,
             area_id: request.area_id,
             name: request.name,
-            party: request.party
+            party: request.party,
+            photo_url: request.photo_url
         };
     } on fail var e {
         log:printError("Database error during candidate update: " + e.message());

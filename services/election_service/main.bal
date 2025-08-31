@@ -406,4 +406,91 @@ service /election on httpListener {
             return http:INTERNAL_SERVER_ERROR;
         }
     }
+
+    // Sample data endpoint for testing
+    isolated resource function post createSampleData() returns json|http:InternalServerError {
+        log:printInfo("Creating sample election data...");
+        
+        // Create sample active election
+        election:CreateElectionData sampleElection = {
+            title: "City Council Election 2025",
+            description: "Select your representative for the city council",
+            start_time: "2025-08-31T00:00:00Z",
+            end_time: "2025-12-31T23:59:59Z",
+            is_public: true
+        };
+        
+        do {
+            // Create election
+            election:Election|error electionResult = election:createElection(sampleElection);
+            if electionResult is error {
+                log:printError("Failed to create sample election: " + electionResult.message());
+                return http:INTERNAL_SERVER_ERROR;
+            }
+            
+            string electionId = electionResult.id.toString();
+            log:printInfo("Created election with ID: " + electionId);
+            
+            // Create a sample area first (required for candidates)
+            election:CreateAreaData sampleArea = {
+                name: "City District 1",
+                description: "Primary voting district"
+            };
+            
+            election:Area|error areaResult = election:createArea(sampleArea);
+            if areaResult is error {
+                log:printError("Failed to create sample area: " + areaResult.message());
+                return http:INTERNAL_SERVER_ERROR;
+            }
+            
+            string areaId = areaResult.id.toString();
+            log:printInfo("Created area with ID: " + areaId);
+            
+            // Create sample candidates
+            election:CreateCandidateData[] candidates = [
+                {
+                    area_id: areaId,
+                    name: "Alice Johnson",
+                    party: "Democratic Party",
+                    photo_url: "https://images.unsplash.com/photo-1494790108755-2616b626be13?w=150&h=150&fit=crop&crop=face"
+                },
+                {
+                    area_id: areaId,
+                    name: "Robert Smith", 
+                    party: "Republican Party",
+                    photo_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                },
+                {
+                    area_id: areaId,
+                    name: "Maria Garcia",
+                    party: "Independent",
+                    photo_url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
+                }
+            ];
+            
+            int candidatesCreated = 0;
+            foreach election:CreateCandidateData candidate in candidates {
+                var candidateResult = election:createCandidate(electionId, candidate);
+                if candidateResult is error {
+                    log:printError("Failed to create candidate " + candidate.name + ": " + candidateResult.message());
+                } else {
+                    candidatesCreated += 1;
+                    log:printInfo("Created candidate: " + candidate.name);
+                }
+            }
+            
+            return {
+                "message": "Sample election data created successfully",
+                "election_id": electionId,
+                "election_title": sampleElection.title,
+                "area_id": areaId,
+                "candidates_created": candidatesCreated,
+                "total_candidates": candidates.length()
+            };
+            
+        } on fail var e {
+            log:printError("Error creating sample data: " + e.message());
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
 }

@@ -119,6 +119,8 @@ public isolated function getRole(int role_id) returns string|error {
         return "field_staff";
     } else if role_id == 4 {
         return "polling_staff";
+    } else if role_id == 5 {
+        return "voter";
     } else {
         return error("Invalid role_id: " + role_id.toString());
     }
@@ -212,6 +214,12 @@ public function decodeRequest(http:Request req) returns json|error {
 
 public isolated function insertUser(User user) returns sql:ExecutionResult|error {
     sql:ParameterizedQuery insertQuery = `INSERT INTO users (name, email, password_hash, role_id) VALUES (${user.name}, ${user.email}, ${user.password_hash}, ${user.role_id})`;
+    sql:ExecutionResult result = check dbClient->execute(insertQuery);
+    return result;
+}
+
+public isolated function insertRole(int roleId, string roleName) returns sql:ExecutionResult|error {
+    sql:ParameterizedQuery insertQuery = `INSERT INTO roles (id, name) VALUES (${roleId}, ${roleName}) ON CONFLICT (id) DO NOTHING`;
     sql:ExecutionResult result = check dbClient->execute(insertQuery);
     return result;
 }

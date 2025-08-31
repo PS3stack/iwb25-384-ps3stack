@@ -7,15 +7,16 @@ import { Badge } from "@/components/ui/badge"
 import { CheckCircle, AlertTriangle, Vote, X } from "lucide-react"
 
 interface VoteConfirmationModalProps {
-  selections: Record<number, number>
+  selections: Record<string, string>
   elections: any[]
   onConfirm: () => void
   onCancel: () => void
+  isSubmitting?: boolean
 }
 
-export function VoteConfirmationModal({ selections, elections, onConfirm, onCancel }: VoteConfirmationModalProps) {
-  const getSelectedCandidate = (electionId: number, candidateId: number) => {
-    const election = elections.find((e) => e.id === electionId)
+export function VoteConfirmationModal({ selections, elections, onConfirm, onCancel, isSubmitting = false }: VoteConfirmationModalProps) {
+  const getSelectedCandidate = (electionId: string, candidateId: string) => {
+    const election = elections.find((e) => e.id.toString() === electionId)
     return election?.candidates.find((c: any) => c.id === candidateId)
   }
 
@@ -62,9 +63,11 @@ export function VoteConfirmationModal({ selections, elections, onConfirm, onCanc
             {/* Vote Summary */}
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-900">Your Vote Summary</h3>
-              {elections.map((election) => {
-                const selectedCandidateId = selections[election.id]
-                const selectedCandidate = getSelectedCandidate(election.id, selectedCandidateId)
+              {elections
+                .filter((election) => selections[election.id.toString()]) // Only show elections with selections
+                .map((election) => {
+                const selectedCandidateId = selections[election.id.toString()]
+                const selectedCandidate = getSelectedCandidate(election.id.toString(), selectedCandidateId)
 
                 return (
                   <div key={election.id} className="border rounded-lg p-4">
@@ -108,12 +111,12 @@ export function VoteConfirmationModal({ selections, elections, onConfirm, onCanc
 
             {/* Actions */}
             <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button variant="outline" onClick={onCancel}>
+              <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
                 Go Back to Review
               </Button>
-              <Button onClick={onConfirm} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={onConfirm} className="bg-blue-600 hover:bg-blue-700" disabled={isSubmitting}>
                 <Vote className="w-4 h-4 mr-2" />
-                Submit My Vote
+                {isSubmitting ? 'Submitting...' : 'Submit My Vote'}
               </Button>
             </div>
           </CardContent>

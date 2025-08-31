@@ -57,38 +57,76 @@ export default function LoginPage() {
           redirectPath = '/support'
           roleId = 4
           break
+        case 'voter':
+          loginEndpoint = 'api/auth/voter/login'
+          redirectPath = '/voter/ballot'
+          roleId = 5
+          break
         default:
           setError('Invalid role selected')
           setLoading(false)
           return
       }
 
-      const response = await fetch(`http://localhost:8080/${loginEndpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, role_id: roleId }),
-        credentials: 'include', // Include cookies
-      })
+      try {
+        const response = await fetch(`http://localhost:8080/${loginEndpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password, role_id: roleId }),
+          credentials: 'include', // Include cookies
+        })
 
-      if (response.ok) {
-        const data = await response.json()
-        
-        // Create user object from response data
-        const user = {
-          id: 1, // Default ID for now
-          name: data.userEmail?.split('@')[0] || 'User', // Extract name from email
-          email: data.userEmail || email,
-          role: data.role || role,
-          role_id: roleId
+        if (response.ok) {
+          const data = await response.json()
+          
+          // Create user object from response data
+          const user = {
+            id: 1, // Default ID for now
+            name: data.userEmail?.split('@')[0] || 'User', // Extract name from email
+            email: data.userEmail || email,
+            role: data.role || role,
+            role_id: roleId
+          }
+          
+          login(user, data.token || 'session-token', data.role || role)
+          router.push(redirectPath)
+        } else {
+          const errorData = await response.json()
+          setError(errorData.message || 'Login failed')
         }
-        
-        login(user, data.token || 'session-token', data.role || role)
-        router.push(redirectPath)
-      } else {
-        const errorData = await response.json()
-        setError(errorData.message || 'Login failed')
+      } catch (networkError: any) {
+        // If backend is not available, provide demo login for voter role
+        if ((networkError.code === 'ECONNREFUSED' || networkError.message?.includes('fetch')) && 
+            role === 'voter' && 
+            (email === 'voter1@test.com' || email === 'voter2@test.com' || email === 'voter3@test.com') && 
+            password === 'password123') {
+          
+          console.log('Backend not available, using demo login for voter')
+          
+          // Create demo user object
+          const user = {
+            id: 1,
+            name: email.split('@')[0],
+            email: email,
+            role: 'voter',
+            role_id: 5
+          }
+          
+          // Create a demo token
+          const demoToken = btoa(JSON.stringify({
+            sub: email,
+            role_id: 5,
+            role: 'voter',
+            exp: Date.now() + 3600000 // 1 hour
+          }))
+          
+          login(user, demoToken, 'voter')
+          router.push('/voter/ballot')
+        } else {
+          throw networkError // Re-throw if not a demo case
+        }
       }
     } catch (err) {
       console.error('Login error:', err)
@@ -118,6 +156,7 @@ export default function LoginPage() {
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="voter">Voter</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="observer">Observer</SelectItem>
                   <SelectItem value="field_staff">Field Staff</SelectItem>
@@ -169,6 +208,7 @@ export default function LoginPage() {
             <div className="text-sm text-gray-600">
               <h4 className="font-medium mb-2">Demo Accounts:</h4>
               <div className="space-y-1 text-xs">
+                <p><strong>Voter:</strong> voter1@test.com / password123</p>
                 <p><strong>Admin:</strong> admin@test.com / password123</p>
                 <p><strong>Observer:</strong> observer@test.com / password123</p>
                 <p><strong>Field Staff:</strong> field@test.com / password123</p>

@@ -11,7 +11,7 @@ configurable int TOKEN_EXPIRY = ?;
 configurable string JWT_SECRET = ?;
 
 public isolated function checkUserCredentials(string email, string password, int role_id) returns boolean|error {
-    sql:ParameterizedQuery getUserQuery = `SELECT email, password_hash, role_id FROM users WHERE email = ${email} AND role_id = ${role_id}`;
+    sql:ParameterizedQuery getUserQuery = `SELECT name, email, password_hash, role_id FROM users WHERE email = ${email} AND role_id = ${role_id}`;
     stream<User, sql:Error?> userStream = dbClient->query(getUserQuery);
 
     record {|User value;|}? existingUser = check userStream.next();
@@ -90,7 +90,7 @@ isolated function generateJwtToken(string email, int role_id, int expiry) return
 public isolated function createAuthCookie(string token, int expiry) returns http:Cookie {
     http:Cookie authCookie = new http:Cookie("auth_token", token, {
         httpOnly: true,
-        secure: true, 
+        secure: false, // Set to false for local development (HTTP)
         maxAge: expiry * 3600,
         path: "/"
     });
@@ -208,4 +208,10 @@ public function decodeRequest(http:Request req) returns json|error {
     }
 
     return payload;
+}
+
+public isolated function insertUser(User user) returns sql:ExecutionResult|error {
+    sql:ParameterizedQuery insertQuery = `INSERT INTO users (name, email, password_hash, role_id) VALUES (${user.name}, ${user.email}, ${user.password_hash}, ${user.role_id})`;
+    sql:ExecutionResult result = check dbClient->execute(insertQuery);
+    return result;
 }

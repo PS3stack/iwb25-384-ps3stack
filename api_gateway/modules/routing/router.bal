@@ -34,6 +34,10 @@ public isolated function forwardToAuthService(string method, string path, json? 
         return gateway:createErrorResponse(503, "Authentication service temporarily unavailable");
     }
     
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    
     log:printInfo("Successfully forwarded request to auth service");
     return response;
 }
@@ -63,6 +67,10 @@ public isolated function forwardRequestWithoutAuth(string method, string path, j
         log:printError("Error forwarding request to " + serviceName + ": " + response.message());
         return gateway:createErrorResponse(503, serviceName + " temporarily unavailable");
     }
+    
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
     
     log:printInfo("Successfully forwarded request to " + serviceName);
     return response;
@@ -100,6 +108,10 @@ public isolated function forwardRequestWithAuth(string method, string path, json
         log:printError("Error forwarding request to " + serviceName + ": " + response.message());
         return gateway:createErrorResponse(503, serviceName + " temporarily unavailable");
     }
+    
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
     
     log:printInfo("Successfully forwarded request to " + serviceName);
     return response;
@@ -149,6 +161,10 @@ public isolated function forwardWithRoleCheck(string method, string path, json? 
         log:printError("Error forwarding request to " + serviceName + ": " + response.message());
         return gateway:createErrorResponse(503, serviceName + " temporarily unavailable");
     }
+    
+    // Add CORS headers to the response
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
     
     log:printInfo("Successfully forwarded authorized request to " + serviceName);
     return response;

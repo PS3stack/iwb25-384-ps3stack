@@ -75,6 +75,22 @@ service /auth on new http:Listener(HTTP_PORT) {
         return response;
     }
 
+    resource function post field_staff/login(auth:LoginRequest req) returns auth:LoginResponse|http:Response|error {
+        auth:LoginResponse|error response = auth:loginUser(req);
+        if response is error {
+            return error("Error logging in field staff: " + response.message());
+        }
+        if response.success && response.token is string {
+            http:Response httpResponse = new;
+            http:Cookie authCookie = auth:createAuthCookie(response.token.toString(), 1);
+            httpResponse.addCookie(authCookie);
+            httpResponse.setJsonPayload(response.toJson());
+            
+            return httpResponse;
+        }
+        return response;
+    }
+
     resource function get .(http:Request req) returns json|error {
         return auth:decodeRequest(req);
     }
@@ -96,6 +112,34 @@ service /auth on new http:Listener(HTTP_PORT) {
         });
         
         return httpResponse;
+    }
+
+    // Sample data endpoint for testing
+    resource function post createSampleData() returns json|error {
+        // Create sample users for testing
+        auth:User[] sampleUsers = [
+            {name: "Admin User", email: "admin@test.com", password_hash: "password123", role_id: 1},
+            {name: "Observer User", email: "observer@test.com", password_hash: "password123", role_id: 2},
+            {name: "Field Staff User", email: "field@test.com", password_hash: "password123", role_id: 3},
+            {name: "Polling Staff User", email: "polling@test.com", password_hash: "password123", role_id: 4}
+        ];
+        
+        int insertedCount = 0;
+        foreach auth:User user in sampleUsers {
+            var result = auth:insertUser(user);
+            if result is error {
+                io:println("Failed to insert user: " + user.email + " - " + result.message());
+            } else {
+                insertedCount += 1;
+                io:println("Successfully inserted user: " + user.email);
+            }
+        }
+        
+        return {
+            "message": "Sample data creation completed",
+            "inserted_users": insertedCount,
+            "total_attempted": sampleUsers.length()
+        };
     }
 
 }

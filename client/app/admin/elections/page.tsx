@@ -10,80 +10,131 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ElectionFormModal } from "@/components/admin/election-form-modal"
 import { Plus, Search, Edit, Trash2, Eye, Calendar, Users, MapPin } from "lucide-react"
+import { electionAPI, apiHelpers } from "@/api/api"
+import { useToast } from "@/hooks/use-toast"
 
-const mockelections = [
-  {
-    id: 1,
-    title: "Presidential Election 2024",
-    type: "Presidential",
-    status: "Active",
-    startDate: "2024-03-15",
-    endDate: "2024-03-15",
-    candidates: 4,
-    voters: 1247,
-    location: "National",
-  },
-  {
-    id: 2,
-    title: "City Council Election",
-    type: "Local",
-    status: "Scheduled",
-    startDate: "2024-04-20",
-    endDate: "2024-04-20",
-    candidates: 8,
-    voters: 892,
-    location: "City Center",
-  },
-  {
-    id: 3,
-    title: "School Board Election",
-    type: "Educational",
-    status: "Completed",
-    startDate: "2024-02-10",
-    endDate: "2024-02-10",
-    candidates: 6,
-    voters: 456,
-    location: "District 5",
-  },
-]
+interface Election {
+  id: string
+  title: string
+  description?: string
+  isActive: boolean
+  start_time: string
+  end_time: string
+  is_public: boolean
+  startDate: string
+  endDate: string
+  candidates?: any[]
+  voters?: any[]
+}
 
 export default function ElectionsPage() {
-  const [mockElections, setMockElections] = useState(mockelections)
+  const [elections, setElections] = useState<Election[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-
+  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchElections = async () => {
       try {
-        // const response = await fetch("/api/elections");
-        // const data = await response.json();
-        // setMockElections(data);
-        setMockElections(mockelections);
+        setLoading(true)
+        const response = await electionAPI.getAllElections()
+        const formattedElections = response.data.map(apiHelpers.formatElection)
+        setElections(formattedElections)
       } catch (error) {
-        console.error("Error fetching elections:", error);
+        console.error("Error fetching elections:", error)
+        toast({
+          title: "Error",
+          description: "Failed to fetch elections. Please try again.",
+          variant: "destructive",
+        })
+        // Fallback to mock data if API fails
+        setElections([])
+      } finally {
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchElections()
+  }, [toast])
 
-  const filteredElections = mockElections.filter(
+  const handleCreateElection = async (data: any) => {
+    try {
+      const response = await electionAPI.createElection(data)
+      const newElection = apiHelpers.formatElection(response.data)
+      setElections(prev => [...prev, newElection])
+      setIsCreateModalOpen(false)
+      toast({
+        title: "Success",
+        description: "Election created successfully",
+      })
+    } catch (error) {
+      console.error("Error creating election:", error)
+      toast({
+        title: "Error",
+        description: "Failed to create election. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteElection = async (id: string) => {
+    try {
+      await electionAPI.deleteElection(id)
+      setElections(prev => prev.filter(election => election.id !== id))
+      toast({
+        title: "Success",
+        description: "Election deleted successfully",
+      })
+    } catch (error) {
+      console.error("Error deleting election:", error)
+      toast({
+        title: "Error", 
+        description: "Failed to delete election. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const filteredElections = elections.filter(
     (election) =>
-      election.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      election.type.toLowerCase().includes(searchTerm.toLowerCase()),
+      election.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      election.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-chart-3 text-white"
-      case "Scheduled":
-        return "bg-chart-1 text-white"
-      case "Completed":
-        return "bg-chart-2 text-white"
-      default:
-        return "bg-muted text-muted-foreground"
+  const getStatusColor = (election: Election) => {
+    if (election.isActive) {
+      return "bg-chart-3 text-white"
+    } else {
+      const now = new Date()
+      const startTime = new Date(election.start_time)
+      if (now < startTime) {
+        return "bg-chart-1 text-white" // Scheduled
+      } else {
+        return "bg-chart-2 text-white" // Completed
+      }
     }
+  }
+
+  const getStatusText = (election: Election) => {
+    if (election.isActive) return "Active"
+    const now = new Date()
+    const startTime = new Date(election.start_time)
+    return now < startTime ? "Scheduled" : "Completed"
+  }
+
+  // Calculate stats
+  const activeElections = elections.filter(e => e.isActive).length
+  const totalCandidates = elections.reduce((sum, e) => sum + (e.candidates?.length || 0), 0)
+  const totalVoters = elections.reduce((sum, e) => sum + (e.voters?.length || 0), 0)
+
+  if (loading) {
+    return (
+      <RoleLayout role="admin" sidebarItems={adminSidebarItems} currentPath="/admin/elections">
+        <div className="p-6 space-y-6">
+          <div className="text-center">Loading elections...</div>
+        </div>
+      </RoleLayout>
+    )
   }
 
   return (
@@ -109,7 +160,7 @@ export default function ElectionsPage() {
                 <Calendar className="h-4 w-4 text-chart-1" />
                 <div>
                   <p className="text-sm text-muted-foreground">Active Elections</p>
-                  <p className="text-2xl font-bold">1</p>
+                  <p className="text-2xl font-bold">{activeElections}</p>
                 </div>
               </div>
             </CardContent>
@@ -120,7 +171,7 @@ export default function ElectionsPage() {
                 <Users className="h-4 w-4 text-chart-2" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Candidates</p>
-                  <p className="text-2xl font-bold">18</p>
+                  <p className="text-2xl font-bold">{totalCandidates}</p>
                 </div>
               </div>
             </CardContent>
@@ -131,7 +182,7 @@ export default function ElectionsPage() {
                 <Users className="h-4 w-4 text-chart-3" />
                 <div>
                   <p className="text-sm text-muted-foreground">Registered Voters</p>
-                  <p className="text-2xl font-bold">2,595</p>
+                  <p className="text-2xl font-bold">{totalVoters}</p>
                 </div>
               </div>
             </CardContent>
@@ -141,8 +192,8 @@ export default function ElectionsPage() {
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-chart-4" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Locations</p>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-sm text-muted-foreground">Total Elections</p>
+                  <p className="text-2xl font-bold">{elections.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -175,12 +226,11 @@ export default function ElectionsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Election Title</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Description</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Candidates</TableHead>
-                  <TableHead>Voters</TableHead>
-                  <TableHead>Location</TableHead>
+                  <TableHead>Start Date</TableHead>
+                  <TableHead>End Date</TableHead>
+                  <TableHead>Public</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -188,14 +238,15 @@ export default function ElectionsPage() {
                 {filteredElections.map((election) => (
                   <TableRow key={election.id}>
                     <TableCell className="font-medium">{election.title}</TableCell>
-                    <TableCell>{election.type}</TableCell>
+                    <TableCell>{election.description || 'No description'}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(election.status)}>{election.status}</Badge>
+                      <Badge className={getStatusColor(election)}>
+                        {getStatusText(election)}
+                      </Badge>
                     </TableCell>
                     <TableCell>{election.startDate}</TableCell>
-                    <TableCell>{election.candidates}</TableCell>
-                    <TableCell>{election.voters}</TableCell>
-                    <TableCell>{election.location}</TableCell>
+                    <TableCell>{election.endDate}</TableCell>
+                    <TableCell>{election.is_public ? 'Yes' : 'No'}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button variant="ghost" size="sm">
@@ -204,7 +255,11 @@ export default function ElectionsPage() {
                         <Button variant="ghost" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteElection(election.id)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -220,10 +275,7 @@ export default function ElectionsPage() {
         <ElectionFormModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
-          onSubmit={(data) => {
-            console.log("Election created:", data)
-            setIsCreateModalOpen(false)
-          }}
+          onSubmit={handleCreateElection}
         />
       </div>
     </RoleLayout>

@@ -28,6 +28,18 @@ public function main() returns error? {
 }
 
 service / on new http:Listener(HTTP_PORT) {
+    
+    // CORS preflight handler
+    resource function options [string... pathSegments](http:Request req) returns http:Response {
+        http:Response response = new;
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.statusCode = 200;
+        return response;
+    }
+    
     // Root endpoint - API information
     resource function get .() returns json {
         return {

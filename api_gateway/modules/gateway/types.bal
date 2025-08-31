@@ -11,7 +11,8 @@ public type UserClaims record {|
     string aud;
     int iat;
     int exp;
-    string role_id;
+    int role_id;
+    string role;
 |};
 
 // Health status for services
@@ -47,3 +48,9 @@ public enum UserRole {
     FIELD_STAFF = "3",
     POLLING_STAFF = "4"
 }
+
+// User role ID constants (integers)
+public const int ADMIN_ROLE = 1;
+public const int OBSERVER_ROLE = 2;
+public const int FIELD_STAFF_ROLE = 3;
+public const int POLLING_STAFF_ROLE = 4;

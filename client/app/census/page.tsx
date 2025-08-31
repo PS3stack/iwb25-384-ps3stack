@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import SupportTrigger from "@/components/shared/SupportTrigger"
 
 const dashboardstats = [
   {
@@ -177,10 +178,13 @@ export default function CensusDashboard() {
             <h1 className="text-3xl font-bold text-foreground">Census Management</h1>
             <p className="text-muted-foreground">Oversee census projects and data collection operations</p>
           </div>
-          <Button>
-            <Settings className="h-4 w-4 mr-2" />
-            Census Settings
-          </Button>
+          <div className="flex items-center gap-3">
+            <SupportTrigger size="sm" />
+            <Button>
+              <Settings className="h-4 w-4 mr-2" />
+              Census Settings
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}

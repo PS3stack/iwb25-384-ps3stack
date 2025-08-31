@@ -110,7 +110,7 @@ export default function SupportCenter() {
       setIsLoading(true)
       const response = await supportAPI.sendChatMessage({
         message: currentMessage,
-        sessionHistory: []
+        user_id: "current-user", // This should come from auth context
       })
       
       // Add the new message to the chat
@@ -119,7 +119,7 @@ export default function SupportCenter() {
         message: currentMessage,
         is_user: true,
         timestamp: new Date().toISOString(),
-        response: response.data.reply
+        response: response.data.response
       }
       
       setChatMessages(prev => [...prev, newMessage])

@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, Vote, Eye, BarChart3, Shield, ChevronRight, Building2, FileText, Globe } from "lucide-react"
+import { Users, Vote, Eye, BarChart3, Shield, ChevronRight, Building2, FileText, Globe, LogIn } from "lucide-react"
 
 const userRoles = [
   {
@@ -60,6 +61,7 @@ const userRoles = [
 
 export default function HomePage() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const router = useRouter()
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,6 +78,13 @@ export default function HomePage() {
                 <p className="text-sm text-muted-foreground">Professional Government System</p>
               </div>
             </div>
+            <Button 
+              onClick={() => router.push('/login')}
+              className="flex items-center space-x-2"
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Login</span>
+            </Button>
           </div>
         </div>
       </header>
@@ -155,8 +164,8 @@ export default function HomePage() {
                             className="w-full mt-4"
                             onClick={(e) => {
                               e.stopPropagation()
-                              // Navigate to role-specific dashboard
-                              window.location.href = `/${role.id}`
+                              // Navigate to login page for authentication
+                              router.push('/login')
                             }}
                           >
                             Access {role.title}

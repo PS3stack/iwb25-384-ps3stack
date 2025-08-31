@@ -7,6 +7,7 @@ import { RoleLayout } from "@/components/layout/role-layout"
 import { fieldStaffSidebarItems } from "@/lib/field-staff-navigation"
 import { FileText, Users, MapPin, CheckCircle, Clock, AlertTriangle, TrendingUp, Home, Upload } from "lucide-react"
 import { useEffect, useState } from "react"
+import SupportTrigger from "@/components/shared/SupportTrigger"
 
 const dashboardstats = [
   {
@@ -159,9 +160,12 @@ export default function FieldStaffDashboard() {
             <h1 className="text-3xl font-bold text-foreground">Field Staff Dashboard</h1>
             <p className="text-muted-foreground">Manage your data collection assignments and submissions</p>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">Collector ID</div>
-            <div className="font-medium">FS-2024-0156</div>
+          <div className="flex items-center gap-3">
+            <SupportTrigger size="sm" />
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground">Collector ID</div>
+              <div className="font-medium">FS-2024-0156</div>
+            </div>
           </div>
         </div>
 

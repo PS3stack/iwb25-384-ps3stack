@@ -11,69 +11,143 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CSVUploader } from "@/components/admin/csv-uploader"
 import { AddVoterForm } from "@/components/admin/add-voter-form"
 import { Plus, Search, Upload, Users, UserCheck, UserX, Download } from "lucide-react"
+import { electionAPI, apiHelpers } from "@/api/api"
+import { useToast } from "@/hooks/use-toast"
 
-const mockvoters = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@email.com",
-    phone: "+1234567890",
-    address: "123 Main St, City",
-    status: "Active",
-    registrationDate: "2024-01-15",
-    district: "District 1",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@email.com",
-    phone: "+1234567891",
-    address: "456 Oak Ave, City",
-    status: "Active",
-    registrationDate: "2024-01-20",
-    district: "District 2",
-  },
-  {
-    id: 3,
-    name: "Bob Johnson",
-    email: "bob.johnson@email.com",
-    phone: "+1234567892",
-    address: "789 Pine St, City",
-    status: "Inactive",
-    registrationDate: "2024-01-10",
-    district: "District 1",
-  },
-]
+interface Voter {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  address?: string
+  status?: string
+  registrationDate?: string
+  district?: string
+  election_id?: string
+  has_voted?: boolean
+  election?: any
+}
 
 export default function VotersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showUploader, setShowUploader] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [mockVoters, setMockVoters] = useState(mockvoters)  
+  const [voters, setVoters] = useState<Voter[]>([])
+  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const response = await fetch("/api/voters");
-        // const data = await response.json();
-        // setMockVoters(data);
-        setMockVoters(mockvoters);
+        setLoading(true)
+        // Get all elections first, then get voters for each
+        const electionsResponse = await electionAPI.getAllElections()
+        const allVoters: Voter[] = []
+        
+        // For each election, get its voters
+        for (const election of electionsResponse.data) {
+          try {
+            const votersResponse = await electionAPI.getVotersByElection(election.id)
+            const electionVoters = votersResponse.data.map((voter: any) => ({
+              ...apiHelpers.formatVoter(voter),
+              election: election,
+              status: voter.has_voted ? "Voted" : "Active"
+            }))
+            allVoters.push(...electionVoters)
+          } catch (error) {
+            console.error(`Error fetching voters for election ${election.id}:`, error)
+          }
+        }
+        
+        setVoters(allVoters)
       } catch (error) {
-        console.error("Error fetching voters:", error);
+        console.error("Error fetching voters:", error)
+        toast({
+          title: "Error",
+          description: "Failed to fetch voters. Please try again.",
+          variant: "destructive",
+        })
+        // Fallback to empty array if API fails
+        setVoters([])
+      } finally {
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchData()
+  }, [toast])
 
-  const filteredVoters = mockVoters.filter(
+  const handleCreateVoter = async (data: any) => {
+    try {
+      const response = await electionAPI.createVoter(data)
+      const newVoter = apiHelpers.formatVoter(response.data)
+      setVoters(prev => [...prev, newVoter])
+      setShowAddForm(false)
+      toast({
+        title: "Success",
+        description: "Voter created successfully",
+      })
+    } catch (error) {
+      console.error("Error creating voter:", error)
+      toast({
+        title: "Error",
+        description: "Failed to create voter. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteVoter = async (id: string) => {
+    try {
+      await electionAPI.deleteVoter(id)
+      setVoters(prev => prev.filter(voter => voter.id !== id))
+      toast({
+        title: "Success",
+        description: "Voter deleted successfully",
+      })
+    } catch (error) {
+      console.error("Error deleting voter:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete voter. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const filteredVoters = voters.filter(
     (voter) =>
-      voter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      voter.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      voter.district.toLowerCase().includes(searchTerm.toLowerCase()),
+      voter.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      voter.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      voter.district?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const getStatusColor = (status: string) => {
-    return status === "Active" ? "bg-chart-3 text-white" : "bg-chart-5 text-white"
+    switch (status) {
+      case "Active":
+        return "bg-chart-3 text-white"
+      case "Voted":
+        return "bg-chart-1 text-white"
+      case "Inactive":
+        return "bg-chart-5 text-white"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  // Calculate stats
+  const totalVoters = voters.length
+  const activeVoters = voters.filter(v => v.status === "Active").length
+  const votedVoters = voters.filter(v => v.has_voted || v.status === "Voted").length
+  const inactiveVoters = voters.filter(v => v.status === "Inactive").length
+
+  if (loading) {
+    return (
+      <RoleLayout role="admin" sidebarItems={adminSidebarItems} currentPath="/admin/voters">
+        <div className="p-6 space-y-6">
+          <div className="text-center">Loading voters...</div>
+        </div>
+      </RoleLayout>
+    )
   }
 
   return (
@@ -105,7 +179,7 @@ export default function VotersPage() {
                 <Users className="h-4 w-4 text-chart-1" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Voters</p>
-                  <p className="text-2xl font-bold">1,247</p>
+                  <p className="text-2xl font-bold">{totalVoters}</p>
                 </div>
               </div>
             </CardContent>
@@ -116,7 +190,7 @@ export default function VotersPage() {
                 <UserCheck className="h-4 w-4 text-chart-3" />
                 <div>
                   <p className="text-sm text-muted-foreground">Active Voters</p>
-                  <p className="text-2xl font-bold">1,156</p>
+                  <p className="text-2xl font-bold">{activeVoters}</p>
                 </div>
               </div>
             </CardContent>
@@ -126,8 +200,8 @@ export default function VotersPage() {
               <div className="flex items-center space-x-2">
                 <UserX className="h-4 w-4 text-chart-5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Inactive Voters</p>
-                  <p className="text-2xl font-bold">91</p>
+                  <p className="text-sm text-muted-foreground">Already Voted</p>
+                  <p className="text-2xl font-bold">{votedVoters}</p>
                 </div>
               </div>
             </CardContent>
@@ -137,8 +211,8 @@ export default function VotersPage() {
               <div className="flex items-center space-x-2">
                 <Download className="h-4 w-4 text-chart-2" />
                 <div>
-                  <p className="text-sm text-muted-foreground">This Month</p>
-                  <p className="text-2xl font-bold">156</p>
+                  <p className="text-sm text-muted-foreground">Inactive</p>
+                  <p className="text-2xl font-bold">{inactiveVoters}</p>
                 </div>
               </div>
             </CardContent>
@@ -173,7 +247,7 @@ export default function VotersPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
-                  <TableHead>District</TableHead>
+                  <TableHead>Election</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Registration Date</TableHead>
                   <TableHead>Actions</TableHead>
@@ -183,19 +257,25 @@ export default function VotersPage() {
                 {filteredVoters.map((voter) => (
                   <TableRow key={voter.id}>
                     <TableCell className="font-medium">{voter.name}</TableCell>
-                    <TableCell>{voter.email}</TableCell>
-                    <TableCell>{voter.phone}</TableCell>
-                    <TableCell>{voter.district}</TableCell>
+                    <TableCell>{voter.email || "N/A"}</TableCell>
+                    <TableCell>{voter.phone || "N/A"}</TableCell>
+                    <TableCell>{voter.election?.title || voter.election_id}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(voter.status)}>{voter.status}</Badge>
+                      <Badge className={getStatusColor(voter.status || "Active")}>
+                        {voter.status || "Active"}
+                      </Badge>
                     </TableCell>
-                    <TableCell>{voter.registrationDate}</TableCell>
+                    <TableCell>{voter.registrationDate || "N/A"}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button variant="ghost" size="sm">
                           Edit
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteVoter(voter.id)}
+                        >
                           Delete
                         </Button>
                       </div>
@@ -224,10 +304,7 @@ export default function VotersPage() {
           <AddVoterForm
             isOpen={showAddForm}
             onClose={() => setShowAddForm(false)}
-            onSubmit={(data) => {
-              console.log("Adding voter:", data)
-              setShowAddForm(false)
-            }}
+            onSubmit={handleCreateVoter}
           />
         )}
       </div>

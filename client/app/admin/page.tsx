@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     title: string;
     value: string;
     change: string;
-    icon: React.ComponentType;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
   }[]>([]);
   const [recentActivities, setRecentActivities] = useState<{
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
     title: string;
     description: string;
     href: string;
-    icon: React.ComponentType;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
   }[]>([]);
 

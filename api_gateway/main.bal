@@ -16,7 +16,7 @@ configurable string censusServiceUrl = "http://localhost:8081";
 
 // Main service initialization
 public function main() returns error? {
-    log:printInfo("🚀 Starting PS3Stack API Gateway on port " + HTTP_PORT.toString());
+    log:printInfo("Starting PS3Stack API Gateway on port " + HTTP_PORT.toString());
     map<http:Client> clients = check gateway:getServiceClients(
         authServiceUrl,
         electionServiceUrl,
@@ -25,7 +25,7 @@ public function main() returns error? {
         censusServiceUrl
     );
     health:performStartupHealthCheck(clients);
-    log:printInfo("✅ PS3Stack API Gateway is ready to serve requests");
+    log:printInfo("PS3Stack API Gateway is ready to serve requests");
     return;
 }
 

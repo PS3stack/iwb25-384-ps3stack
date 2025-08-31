@@ -33,7 +33,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "cloud"
-version = "3.3.2"
+version = "3.3.3"
 modules = [
 	{org = "ballerina", packageName = "cloud", moduleName = "cloud"}
 ]
